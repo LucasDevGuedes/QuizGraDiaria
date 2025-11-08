@@ -48,6 +48,10 @@
     .share-buttons a:hover, .share-buttons button:hover { background:var(--primary); }
     .ad-space { width:100%; max-width:520px; text-align:center; margin:20px 0; background:#fffbea; border-radius:var(--radius); padding:10px; font-size:.9rem; border:1px dashed var(--primary); }
     footer { margin-top:auto; padding:15px; font-size:.85rem; color:#555; }
+    .ranking { margin-top:20px; background:var(--light); border:2px solid var(--primary); border-radius:var(--radius); padding:15px; }
+    .ranking h3 { margin-top:0; color:var(--dark); }
+    .ranking-item { display:flex; justify-content:space-between; padding:8px; border-bottom:1px solid #eee; }
+    .ranking-item:last-child { border-bottom:none; }
   </style>
 </head>
 <body>
@@ -66,6 +70,80 @@
   </div>
 
   <footer>© 2025 Quiz Cristão | Todos os direitos reservados</footer>
+
+  <!-- Firebase SDK -->
+  <script type="module">
+    // Import the functions you need from the SDKs you need
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/12.5.0/firebase-app.js";
+    import { getAnalytics, logEvent } from "https://www.gstatic.com/firebasejs/12.5.0/firebase-analytics.js";
+    import { getDatabase, ref, push, query, orderByChild, limitToLast, get } from "https://www.gstatic.com/firebasejs/12.5.0/firebase-database.js";
+
+    // Your web app's Firebase configuration
+    const firebaseConfig = {
+      apiKey: "AIzaSyBj2RLZGicJnVfCV6BJafB91bvH65rC8zM",
+      authDomain: "quizgracadiaria.firebaseapp.com",
+      projectId: "quizgracadiaria",
+      storageBucket: "quizgracadiaria.firebasestorage.app",
+      messagingSenderId: "921062227849",
+      appId: "1:921062227849:web:71ecd5eaf45c0e44aa6b58",
+      measurementId: "G-4X34EZH430"
+    };
+
+    // Initialize Firebase
+    const app = initializeApp(firebaseConfig);
+    const analytics = getAnalytics(app);
+    const database = getDatabase(app);
+
+    // Tornar funções disponíveis globalmente
+    window.firebaseAnalytics = analytics;
+    window.firebaseDatabase = database;
+    window.logEvent = logEvent;
+    window.saveScore = async (score, total) => {
+      try {
+        const scoresRef = ref(database, 'scores');
+        await push(scoresRef, {
+          pontuacao: score,
+          total: total,
+          data: new Date().toISOString(),
+          timestamp: Date.now()
+        });
+        console.log('Pontuação salva com sucesso!');
+        
+        // Log evento no Firebase Analytics
+        logEvent(analytics, 'quiz_completed', {
+          score: score,
+          total: total,
+          percentage: Math.round((score/total)*100)
+        });
+      } catch (error) {
+        console.error('Erro ao salvar pontuação:', error);
+      }
+    };
+
+    window.loadRanking = async () => {
+      try {
+        const scoresRef = ref(database, 'scores');
+        const topScoresQuery = query(scoresRef, orderByChild('pontuacao'), limitToLast(10));
+        const snapshot = await get(topScoresQuery);
+        
+        if (snapshot.exists()) {
+          const scores = [];
+          snapshot.forEach((childSnapshot) => {
+            scores.push(childSnapshot.val());
+          });
+          
+          // Ordenar do maior para o menor
+          scores.sort((a, b) => b.pontuacao - a.pontuacao);
+          
+          return scores;
+        }
+        return [];
+      } catch (error) {
+        console.error('Erro ao carregar ranking:', error);
+        return [];
+      }
+    };
+  </script>
 
   <script>
     const quiz = [
@@ -109,7 +187,6 @@
       if(i===c){
         score++;
         b.classList.add("correct");
-        // Evento do Google Analytics: resposta correta
         gtag('event', 'resposta_correta', {
           'event_category': 'Quiz',
           'event_label': 'Pergunta ' + (current + 1)
@@ -117,7 +194,6 @@
       }else{
         b.classList.add("incorrect");
         a.children[c].classList.add("correct");
-        // Evento do Google Analytics: resposta incorreta
         gtag('event', 'resposta_incorreta', {
           'event_category': 'Quiz',
           'event_label': 'Pergunta ' + (current + 1)
@@ -131,7 +207,31 @@
       else showResult();
     };
     
-    function showResult(){
+    async function showResult(){
+      // Salvar pontuação no Firebase
+      if(window.saveScore) {
+        await window.saveScore(score, quiz.length);
+      }
+      
+      // Carregar ranking
+      let rankingHTML = '';
+      if(window.loadRanking) {
+        const ranking = await window.loadRanking();
+        if(ranking.length > 0) {
+          rankingHTML = `
+            <div class="ranking">
+              <h3>🏆 Top 10 Melhores Pontuações</h3>
+              ${ranking.map((item, index) => `
+                <div class="ranking-item">
+                  <span>${index + 1}º lugar</span>
+                  <span><strong>${item.pontuacao}</strong> de ${item.total}</span>
+                </div>
+              `).join('')}
+            </div>
+          `;
+        }
+      }
+      
       document.getElementById("quiz-content").innerHTML=`
       <div class="result">
         Você acertou <strong>${score}</strong> de <strong>${quiz.length}</strong> perguntas! 🌟<br><br>
@@ -139,6 +239,7 @@
           score < 6 ? "Muito bom! Seu conhecimento está crescendo! 🙏" :
           "Excelente! Você demonstra grande conhecimento bíblico! ✨"}
       </div>
+      ${rankingHTML}
       <div class="ad-space"><p>Anúncio</p></div>
       <div class="share-buttons">
         <a href="https://api.whatsapp.com/send?text=Eu%20acertei%20${score}%20de%20${quiz.length}%20no%20Quiz%20Cristão!%20Faça%20também:%20${encodeURIComponent(window.location.href)}" target="_blank">📱 Compartilhar no WhatsApp</a>
@@ -152,9 +253,6 @@
         'event_label': 'Pontuação',
         'value': score
       });
-      
-      // Salvar pontuação no Firebase (quando ativado)
-      if(window.saveScore) saveScore(score);
     }
     
     load();
