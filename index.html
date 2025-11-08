@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Quiz Cristão - Conhecimento Bíblico</title>
+
+  <!-- Manifesto e Service Worker -->
+  <link rel="manifest" href="manifest.json">
+  <script>
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('sw.js').then(() => console.log('Service Worker registrado.'));
+    }
+  </script>
+
+  <!-- Ícones e tema -->
+  <meta name="theme-color" content="#FFD700"/>
+  <link rel="icon" type="image/png" href="icons/icon-192.png"/>
+
+  <!-- Google Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet"/>
+
+  <style>
+    :root { --primary: #FFD700; --dark: #000; --light: #fff; --gray: #f7f7f7; --radius: 12px; }
+    body { font-family: 'Poppins', sans-serif; background: var(--light); color: var(--dark); margin:0; display:flex; flex-direction:column; align-items:center; min-height:100vh; }
+    header { width:100%; background:var(--primary); padding:18px; font-size:1.6rem; font-weight:600; text-align:center; box-shadow:0 2px 10px rgba(0,0,0,0.08); }
+    .quiz-wrapper { width:95%; max-width:520px; background:var(--gray); border-radius:var(--radius); margin-top:30px; padding:35px 25px; box-shadow:0 5px 15px rgba(0,0,0,0.1); text-align:center; }
+    .question { font-size:1.2rem; font-weight:600; margin-bottom:20px; }
+    .options { display:flex; flex-direction:column; gap:12px; }
+    .option-btn { background:var(--light); border:2px solid var(--dark); border-radius:var(--radius); padding:12px; font-size:1rem; cursor:pointer; transition:all .25s; }
+    .option-btn:hover { background:var(--primary); color:var(--dark); }
+    .option-btn.correct { border-color:green; background:#daf5d1; }
+    .option-btn.incorrect { border-color:red; background:#ffe0e0; }
+    #next-btn { margin-top:25px; background:var(--dark); color:var(--light); border:none; padding:12px 25px; border-radius:var(--radius); font-size:1rem; font-weight:600; cursor:pointer; display:none; }
+    #next-btn:hover { background:var(--primary); color:var(--dark); }
+    .result { font-size:1.3rem; font-weight:600; margin-top:15px; }
+    .share-buttons { margin-top:20px; display:flex; flex-direction:column; gap:12px; }
+    .share-buttons a, .share-buttons button { text-decoration:none; color:var(--dark); border:2px solid var(--primary); border-radius:var(--radius); padding:10px 15px; font-weight:600; transition:background .3s; background:var(--light); }
+    .share-buttons a:hover, .share-buttons button:hover { background:var(--primary); }
+    .ad-space { width:100%; max-width:520px; text-align:center; margin:20px 0; background:#fffbea; border-radius:var(--radius); padding:10px; font-size:.9rem; border:1px dashed var(--primary); }
+    footer { margin-top:auto; padding:15px; font-size:.85rem; color:#555; }
+  </style>
+</head>
+<body>
+  <header>📖 Quiz Cristão</header>
+
+  <div class="quiz-wrapper">
+    <div id="quiz-content">
+      <div id="question" class="question"></div>
+      <div id="answers" class="options"></div>
+      <button id="next-btn">Próxima</button>
+    </div>
+    <div class="ad-space">
+      <!-- Anúncio aqui -->
+      <p>Anúncio</p>
+    </div>
+  </div>
+
+  <footer>© 2025 Quiz Cristão | Todos os direitos reservados</footer>
+
+  <script>
+    const quiz = [
+      {question: "Quem construiu a arca?", options:["Moisés","Noé","Abraão","Josué"], correct:1},
+      {question: "Em quantos dias Deus criou o mundo?", options:["5","6","7","8"], correct:1},
+      {question: "Quem foi lançado na cova dos leões?", options:["Elias","Daniel","Samuel","Davi"], correct:1},
+      {question: "Qual apóstolo negou Jesus três vezes?", options:["Pedro","João","Tiago","Tomé"], correct:0}
+    ];
+    let current=0,score=0;
+    const q=document.getElementById("question"), a=document.getElementById("answers"), next=document.getElementById("next-btn");
+    function load(){const item=quiz[current];q.textContent=item.question;a.innerHTML="";next.style.display="none";
+      item.options.forEach((t,i)=>{const b=document.createElement("button");b.classList.add("option-btn");b.textContent=t;
+      b.onclick=()=>select(i,b);a.appendChild(b);});}
+    function select(i,b){const c=quiz[current].correct;Array.from(a.children).forEach(x=>x.disabled=true);
+      if(i===c){score++;b.classList.add("correct");}else{b.classList.add("incorrect");a.children[c].classList.add("correct");}
+      next.style.display="inline-block";}
+    next.onclick=()=>{if(++current<quiz.length)load();else showResult();};
+    function showResult(){
+      document.getElementById("quiz-content").innerHTML=`
+      <div class="result">
+        Você acertou <strong>${score}</strong> de <strong>${quiz.length}</strong> perguntas! 🌟
+      </div>
+      <div class="ad-space"><p>Anúncio</p></div>
+      <div class="share-buttons">
+        <a href="https://api.whatsapp.com/send?text=Eu%20acertei%20${score}%20de%20${quiz.length}%20no%20Quiz%20Cristão!%20Faça%20também:%20${window.location.href}" target="_blank">📱 WhatsApp</a>
+        <a href="https://facebook.com/sharer/sharer.php?u=${window.location.href}" target="_blank">📣 Facebook</a>
+        <button onclick="window.location.reload()">Refazer Quiz</button>
+      </div>`;
+      // Salvar pontuação no Firebase (quando ativado)
+      if(window.saveScore) saveScore(score);
+    }
+    load();
+  </script>
+
+  <!-- Google Analytics 4 -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-SEU_ID_ANALYTICS"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-SEU_ID_ANALYTICS');
+  </script>
+
+  <!-- Google AdSense -->
+  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=SEU_CODIGO_ADSENSE" crossorigin="anonymous"></script>
+</body>
+</html>
