@@ -1,196 +1,142 @@
 <!DOCTYPE html>
 <html lang="pt-br">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Dashboard | Quiz</title>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Painel - Login</title>
 
   <style>
     body {
-      margin: 0;
-      padding: 0;
       font-family: Arial, sans-serif;
-      background: linear-gradient(135deg, #0e0e2d, #1a1a3a);
-      color: #fff;
-      overflow-x: hidden;
+      background: #f5f5f5;
     }
-
-    /* Tela de carregamento */
-    #loadingScreen {
-      position: fixed;
-      inset: 0;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      background: rgba(0, 0, 0, 0.85);
-      z-index: 9999;
-      animation: fadeIn 0.5s ease-out;
-    }
-
     .loader {
-      border: 6px solid rgba(255,255,255,0.2);
-      border-top: 6px solid white;
-      border-radius: 50%;
-      width: 60px;
-      height: 60px;
-      animation: spin 1s linear infinite;
-      margin-bottom: 15px;
-    }
-
-    @keyframes spin {
-      from { transform: rotate(0deg); }
-      to   { transform: rotate(360deg); }
-    }
-
-    @keyframes fadeIn {
-      from { opacity: 0; }
-      to   { opacity: 1; }
-    }
-
-    #dashboardContent {
       display: none;
-      padding: 20px;
-      animation: fadeIn .5s ease-out;
-    }
-
-    .stat-card {
-      background: rgba(255,255,255,0.08);
-      padding: 15px;
-      margin-top: 10px;
-      border-radius: 10px;
-      transition: .2s;
-    }
-
-    .stat-card:hover {
-      transform: translateY(-4px);
-      background: rgba(255,255,255,0.12);
-    }
-
-    .ad-space {
-      margin-top: 25px;
-      min-width: 320px;
       text-align: center;
+      margin-top: 40px;
+      font-size: 20px;
+      color: #333;
+    }
+    #dashboard {
+      display: none;
     }
   </style>
+
+  <!-- Firebase SDK -->
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js"></script>
+
 </head>
 
 <body>
 
-  <!-- TELA DE CARREGAMENTO -->
-  <div id="loadingScreen">
-    <div class="loader"></div>
-    <p>Aguarde, carregando dados...</p>
+  <h2>Sistema</h2>
+
+  <div id="loader" class="loader">⏳ Validando seu acesso...</div>
+
+  <div id="login-area">
+    <h3>Login</h3>
+    <input type="email" id="email" placeholder="Email"><br><br>
+    <input type="password" id="password" placeholder="Senha"><br><br>
+    <button onclick="login()">Entrar</button>
   </div>
 
-  <!-- DASHBOARD -->
-  <div id="dashboardContent">
-
-    <h2>Seu Painel</h2>
-
-    <div id="userInfo"></div>
-
-    <h3>Estatísticas</h3>
-    <div class="stat-card">
-      <p id="totalPoints">Carregando...</p>
-    </div>
-
-    <div class="stat-card">
-      <p id="totalQuizzes">Carregando...</p>
-    </div>
-
-    <h3>Histórico</h3>
-    <div id="history"></div>
-
-    <div class="ad-space">
-      <ins class="adsbygoogle"
-           style="display:block"
-           data-ad-client="ca-pub-xxxxxxxxxxxx"
-           data-ad-slot="1234567890"
-           data-ad-format="auto"
-           data-full-width-responsive="true"></ins>
-    </div>
-
+  <div id="dashboard">
+    <h3>Bem-vindo ao dashboard!</h3>
+    <p>Seu acesso foi validado com sucesso!</p>
+    <button onclick="logout()">Sair</button>
   </div>
 
-  <!-- SCRIPTS -->
-  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-xxxxxxxxxxxx"></script>
+<script>
+console.log("✅ Script carregado.");
 
-  <script type="module">
+// ✅ Configuração Firebase
+const firebaseConfig = {
+  apiKey: "SUA_API_KEY",
+  authDomain: "SEU_DOMINIO.firebaseapp.com",
+  databaseURL: "https://SEUPROJETO.firebaseio.com",
+  projectId: "SEUPROJETO",
+  storageBucket: "SEUPROJETO.appspot.com",
+  messagingSenderId: "000000000",
+  appId: "1:0000000:web:0000000"
+};
 
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.14.0/firebase-app.js";
-    import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.14.0/firebase-auth.js";
-    import { getDatabase, ref, get } from "https://www.gstatic.com/firebasejs/10.14.0/firebase-database.js";
+console.log("Inicializando Firebase...");
+firebase.initializeApp(firebaseConfig);
+console.log("✅ Firebase iniciado com sucesso.");
 
-    const firebaseConfig = {
-      apiKey: "SUA_API",
-      authDomain: "quizgracadiaria.firebaseapp.com",
-      projectId: "quizgracadiaria",
-      storageBucket: "quizgracadiaria.appspot.com",
-      messagingSenderId: "380028514021",
-      appId: "1:380028514021:web:e1afaace1f6fd5f73a06b3",
-      databaseURL: "https://quizgracadiaria-default-rtdb.firebaseio.com/"
-    };
+const auth = firebase.auth();
+const db = firebase.database();
 
-    const app = initializeApp(firebaseConfig);
-    const auth = getAuth(app);
-    const db = getDatabase(app);
+// ✅ Verifica login automaticamente
+auth.onAuthStateChanged(async (user) => {
+  console.log("🔎 auth.onAuthStateChanged disparado:", user);
 
-    // ✅ FUNÇÃO PRINCIPAL
-    onAuthStateChanged(auth, async (user) => {
+  const loader = document.getElementById("loader");
+  loader.style.display = "block"; // mostra loader
 
-      if (!user) {
-        window.location.href = "index.html";
+  if (user) {
+    console.log("✅ Usuário autenticado:", user.uid);
+
+    try {
+      console.log("🔎 Consultando dados do usuário no DB...");
+
+      const snap = await db.ref("users/" + user.uid).once("value");
+
+      if (snap.exists()) {
+        console.log("✅ Dados encontrados:", snap.val());
+
+        document.getElementById("loader").style.display = "none";
+        document.getElementById("login-area").style.display = "none";
+        document.getElementById("dashboard").style.display = "block";
         return;
+      } else {
+        console.error("❌ Usuário autenticado, mas sem registro em /users/");
       }
 
-      // ✅ Carrega dados com garantia
-      await loadDashboard(user);
-
-      // ✅ Só agora some o loading e mostra o dashboard
-      document.getElementById("loadingScreen").style.display = "none";
-      document.getElementById("dashboardContent").style.display = "block";
-
-      // ✅ Start Ads
-      try {
-        (adsbygoogle = window.adsbygoogle || []).push({});
-      } catch (err) {}
-    });
-
-    // ✅ CARREGAR DADOS DO USUÁRIO
-    async function loadDashboard(user) {
-
-      const userRef = ref(db, `users/${user.uid}`);
-      const snap = await get(userRef);
-
-      let data = snap.exists() ? snap.val() : { quizzes: [], totalPoints: 0 };
-
-      document.getElementById("userInfo").innerHTML =
-        `<p><strong>Email:</strong> ${user.email}</p>`;
-
-      document.getElementById("totalPoints").innerText =
-        `${data.totalPoints || 0} pontos`;
-
-      document.getElementById("totalQuizzes").innerText =
-        `${(data.quizzes || []).length} quizzes respondidos`;
-
-      renderHistory(data.quizzes);
+    } catch (err) {
+      console.error("🔥 Erro ao acessar o DB:", err);
     }
 
-    function renderHistory(quizzes) {
-      const box = document.getElementById("history");
+    console.log("‼️ Algo está errado. Deslogando...");
+    auth.signOut();
+  } else {
+    console.log("❌ Nenhum usuário logado.");
+    document.getElementById("loader").style.display = "none";
+    document.getElementById("login-area").style.display = "block";
+    document.getElementById("dashboard").style.display = "none";
+  }
+});
 
-      if (!quizzes || quizzes.length === 0) {
-        box.innerHTML = "<p>Nenhum quiz respondido ainda.</p>";
-        return;
-      }
 
-      box.innerHTML = quizzes
-        .map(q => `<p>✅ ${q.title} — ${q.score} pontos</p>`)
-        .join("");
-    }
+// ✅ Função Login
+async function login() {
+  const email = document.getElementById("email").value;
+  const password = document.getElementById("password").value;
 
-  </script>
+  console.log("Tentando login com:", email);
+
+  document.getElementById("loader").style.display = "block";
+  document.getElementById("login-area").style.display = "none";
+
+  try {
+    const result = await auth.signInWithEmailAndPassword(email, password);
+    console.log("✅ Login realizado:", result.user.uid);
+  } catch (error) {
+    console.error("🔥 Erro no login:", error);
+    alert("Erro: " + error.message);
+    document.getElementById("loader").style.display = "none";
+    document.getElementById("login-area").style.display = "block";
+  }
+}
+
+// ✅ Função Logout
+function logout() {
+  console.log("Deslogando...");
+  auth.signOut();
+}
+</script>
 
 </body>
 </html>
