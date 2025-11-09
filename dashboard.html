@@ -7,72 +7,96 @@
 
   <style>
     body {
-      font-family: Arial, sans-serif;
-      background: linear-gradient(135deg, #0d0d2b, #1b1b3a);
-      color: #fff;
       margin: 0;
       padding: 0;
+      font-family: Arial, sans-serif;
+      background: linear-gradient(135deg, #0e0e2d, #1a1a3a);
+      color: #fff;
+      overflow-x: hidden;
     }
 
-    #loading {
-      text-align: center;
-      padding: 50px;
-      font-size: 22px;
-      opacity: 0.8;
+    /* Tela de carregamento */
+    #loadingScreen {
+      position: fixed;
+      inset: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      background: rgba(0, 0, 0, 0.85);
+      z-index: 9999;
+      animation: fadeIn 0.5s ease-out;
+    }
+
+    .loader {
+      border: 6px solid rgba(255,255,255,0.2);
+      border-top: 6px solid white;
+      border-radius: 50%;
+      width: 60px;
+      height: 60px;
+      animation: spin 1s linear infinite;
+      margin-bottom: 15px;
+    }
+
+    @keyframes spin {
+      from { transform: rotate(0deg); }
+      to   { transform: rotate(360deg); }
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to   { opacity: 1; }
     }
 
     #dashboardContent {
       display: none;
-      animation: fadeIn .7s ease-out;
       padding: 20px;
-    }
-
-    @keyframes fadeIn {
-      from { opacity: 0; transform: translateY(20px); }
-      to { opacity: 1; transform: translateY(0); }
+      animation: fadeIn .5s ease-out;
     }
 
     .stat-card {
-      border-radius: 12px;
-      background: rgba(255,255,255,0.1);
-      padding: 20px;
-      text-align: center;
-      margin: 10px 0;
-      transition: .25s;
+      background: rgba(255,255,255,0.08);
+      padding: 15px;
+      margin-top: 10px;
+      border-radius: 10px;
+      transition: .2s;
     }
 
     .stat-card:hover {
-      transform: translateY(-5px);
-      box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+      transform: translateY(-4px);
+      background: rgba(255,255,255,0.12);
     }
 
     .ad-space {
+      margin-top: 25px;
       min-width: 320px;
       text-align: center;
-      margin: 20px 0;
-      padding: 5px;
     }
   </style>
-
 </head>
 
 <body>
 
-  <div id="loading">Carregando seu painel...</div>
+  <!-- TELA DE CARREGAMENTO -->
+  <div id="loadingScreen">
+    <div class="loader"></div>
+    <p>Aguarde, carregando dados...</p>
+  </div>
 
+  <!-- DASHBOARD -->
   <div id="dashboardContent">
 
-    <h2>Bem-vindo ao seu painel</h2>
+    <h2>Seu Painel</h2>
 
     <div id="userInfo"></div>
 
-    <h3>Suas estatísticas</h3>
+    <h3>Estatísticas</h3>
     <div class="stat-card">
-      <p id="totalPoints">0 pontos</p>
+      <p id="totalPoints">Carregando...</p>
     </div>
 
     <div class="stat-card">
-      <p id="totalQuizzes">0 quizzes respondidos</p>
+      <p id="totalQuizzes">Carregando...</p>
     </div>
 
     <h3>Histórico</h3>
@@ -89,15 +113,17 @@
 
   </div>
 
-  <!-- Firebase -->
+  <!-- SCRIPTS -->
+  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-xxxxxxxxxxxx"></script>
+
   <script type="module">
+
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.14.0/firebase-app.js";
     import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.14.0/firebase-auth.js";
     import { getDatabase, ref, get } from "https://www.gstatic.com/firebasejs/10.14.0/firebase-database.js";
 
-    // ✅ Firebase Config Correto
     const firebaseConfig = {
-      apiKey: "AIzaSyBqBXCUJKKZqJqJqJqJqJqJqJqJqJqJqJq",
+      apiKey: "SUA_API",
       authDomain: "quizgracadiaria.firebaseapp.com",
       projectId: "quizgracadiaria",
       storageBucket: "quizgracadiaria.appspot.com",
@@ -108,33 +134,37 @@
 
     const app = initializeApp(firebaseConfig);
     const auth = getAuth(app);
-    const database = getDatabase(app);
+    const db = getDatabase(app);
 
-    // ✅ Controle de sessão correto
+    // ✅ FUNÇÃO PRINCIPAL
     onAuthStateChanged(auth, async (user) => {
+
       if (!user) {
         window.location.href = "index.html";
         return;
       }
 
+      // ✅ Carrega dados com garantia
       await loadDashboard(user);
-    });
 
-    async function loadDashboard(user) {
-      const userRef = ref(database, `users/${user.uid}`);
-      const snapshot = await get(userRef);
-
-      let data = snapshot.exists()
-        ? snapshot.val()
-        : { quizzes: [], totalPoints: 0 };
-
-      document.getElementById("loading").style.display = "none";
+      // ✅ Só agora some o loading e mostra o dashboard
+      document.getElementById("loadingScreen").style.display = "none";
       document.getElementById("dashboardContent").style.display = "block";
 
-      renderDashboard(user, data);
-    }
+      // ✅ Start Ads
+      try {
+        (adsbygoogle = window.adsbygoogle || []).push({});
+      } catch (err) {}
+    });
 
-    function renderDashboard(user, data) {
+    // ✅ CARREGAR DADOS DO USUÁRIO
+    async function loadDashboard(user) {
+
+      const userRef = ref(db, `users/${user.uid}`);
+      const snap = await get(userRef);
+
+      let data = snap.exists() ? snap.val() : { quizzes: [], totalPoints: 0 };
+
       document.getElementById("userInfo").innerHTML =
         `<p><strong>Email:</strong> ${user.email}</p>`;
 
@@ -148,29 +178,19 @@
     }
 
     function renderHistory(quizzes) {
-      const container = document.getElementById("history");
+      const box = document.getElementById("history");
 
       if (!quizzes || quizzes.length === 0) {
-        container.innerHTML = "<p>Nenhum quiz respondido ainda.</p>";
+        box.innerHTML = "<p>Nenhum quiz respondido ainda.</p>";
         return;
       }
 
-      container.innerHTML = quizzes
-        .map(q => `<p>✅ ${q.title} — Pontos: ${q.score}</p>`)
+      box.innerHTML = quizzes
+        .map(q => `<p>✅ ${q.title} — ${q.score} pontos</p>`)
         .join("");
     }
 
-    // ✅ Carregar ads sem erro
-    window.addEventListener("load", () => {
-      try {
-        (adsbygoogle = window.adsbygoogle || []).push({});
-      } catch (err) {
-        console.warn("AdSense não carregou ainda.");
-      }
-    });
   </script>
-
-  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-xxxxxxxxxxxx"></script>
 
 </body>
 </html>
