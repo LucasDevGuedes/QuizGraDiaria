@@ -52,6 +52,7 @@
     .ranking h3 { margin-top:0; color:var(--dark); }
     .ranking-item { display:flex; justify-content:space-between; padding:8px; border-bottom:1px solid #eee; }
     .ranking-item:last-child { border-bottom:none; }
+    .loading { color:#666; font-style:italic; }
   </style>
 </head>
 <body>
@@ -70,6 +71,154 @@
   </div>
 
   <footer>© 2025 Quiz Cristão | Todos os direitos reservados</footer>
+
+  <script>
+    const quiz = [
+      {question: "Quem construiu a arca?", options:["Moisés","Noé","Abraão","Josué"], correct:1},
+      {question: "Em quantos dias Deus criou o mundo?", options:["5","6","7","8"], correct:1},
+      {question: "Quem foi lançado na cova dos leões?", options:["Elias","Daniel","Samuel","Davi"], correct:1},
+      {question: "Qual apóstolo negou Jesus três vezes?", options:["Pedro","João","Tiago","Tomé"], correct:0},
+      {question: "Em qual cidade Jesus nasceu?", options:["Jerusalém","Belém","Nazaré","Betânia"], correct:1},
+      {question: "Quem foi o primeiro homem criado por Deus?", options:["Abraão","Adão","Moisés","Isaac"], correct:1},
+      {question: "Quantos mandamentos Deus deu a Moisés?", options:["7","10","12","5"], correct:1}
+    ];
+    
+    let current=0,score=0;
+    const q=document.getElementById("question"), a=document.getElementById("answers"), next=document.getElementById("next-btn");
+    
+    function load(){
+      const item=quiz[current];
+      q.textContent=item.question;
+      a.innerHTML="";
+      next.style.display="none";
+      item.options.forEach((t,i)=>{
+        const b=document.createElement("button");
+        b.classList.add("option-btn");
+        b.textContent=t;
+        b.onclick=()=>select(i,b);
+        a.appendChild(b);
+      });
+      
+      // Evento do Google Analytics: visualização de pergunta
+      if(typeof gtag !== 'undefined') {
+        gtag('event', 'pergunta_visualizada', {
+          'event_category': 'Quiz',
+          'event_label': 'Pergunta ' + (current + 1),
+          'value': current + 1
+        });
+      }
+    }
+    
+    function select(i,b){
+      const c=quiz[current].correct;
+      Array.from(a.children).forEach(x=>x.disabled=true);
+      
+      if(i===c){
+        score++;
+        b.classList.add("correct");
+        if(typeof gtag !== 'undefined') {
+          gtag('event', 'resposta_correta', {
+            'event_category': 'Quiz',
+            'event_label': 'Pergunta ' + (current + 1)
+          });
+        }
+      }else{
+        b.classList.add("incorrect");
+        a.children[c].classList.add("correct");
+        if(typeof gtag !== 'undefined') {
+          gtag('event', 'resposta_incorreta', {
+            'event_category': 'Quiz',
+            'event_label': 'Pergunta ' + (current + 1)
+          });
+        }
+      }
+      next.style.display="inline-block";
+    }
+    
+    next.onclick=()=>{
+      if(++current<quiz.length) {
+        load();
+      } else {
+        showResult();
+      }
+    };
+    
+    function showResult(){
+      // Mostrar resultado imediatamente
+      document.getElementById("quiz-content").innerHTML=`
+      <div class="result">
+        Você acertou <strong>${score}</strong> de <strong>${quiz.length}</strong> perguntas! 🌟<br><br>
+        ${score < 3 ? "Continue aprendendo, Deus abençoa quem busca sabedoria! 📖" : 
+          score < 6 ? "Muito bom! Seu conhecimento está crescendo! 🙏" :
+          "Excelente! Você demonstra grande conhecimento bíblico! ✨"}
+      </div>
+      <div class="ranking">
+        <h3>🏆 Top 10 Melhores Pontuações</h3>
+        <p class="loading">Carregando ranking...</p>
+      </div>
+      <div class="ad-space"><p>Anúncio</p></div>
+      <div class="share-buttons">
+        <a href="https://api.whatsapp.com/send?text=Eu%20acertei%20${score}%20de%20${quiz.length}%20no%20Quiz%20Cristão!%20Faça%20também:%20${encodeURIComponent(window.location.href)}" target="_blank">📱 Compartilhar no WhatsApp</a>
+        <a href="https://facebook.com/sharer/sharer.php?u=${encodeURIComponent(window.location.href)}" target="_blank">📣 Compartilhar no Facebook</a>
+        <button onclick="window.location.reload()">🔄 Refazer Quiz</button>
+      </div>`;
+      
+      // Evento do Google Analytics: quiz finalizado
+      if(typeof gtag !== 'undefined') {
+        gtag('event', 'quiz_finalizado', {
+          'event_category': 'Quiz',
+          'event_label': 'Pontuação',
+          'value': score
+        });
+      }
+      
+      // Salvar pontuação e carregar ranking (assíncrono, não bloqueia a UI)
+      saveAndLoadRanking();
+    }
+    
+    async function saveAndLoadRanking() {
+      try {
+        // Salvar pontuação no Firebase
+        if(window.saveScore) {
+          await window.saveScore(score, quiz.length);
+        }
+        
+        // Carregar ranking
+        if(window.loadRanking) {
+          const ranking = await window.loadRanking();
+          const rankingDiv = document.querySelector('.ranking');
+          
+          if(ranking.length > 0) {
+            rankingDiv.innerHTML = `
+              <h3>🏆 Top 10 Melhores Pontuações</h3>
+              ${ranking.map((item, index) => `
+                <div class="ranking-item">
+                  <span>${index + 1}º lugar</span>
+                  <span><strong>${item.pontuacao}</strong> de ${item.total}</span>
+                </div>
+              `).join('')}
+            `;
+          } else {
+            rankingDiv.innerHTML = `
+              <h3>🏆 Top 10 Melhores Pontuações</h3>
+              <p>Seja o primeiro a pontuar!</p>
+            `;
+          }
+        }
+      } catch(error) {
+        console.error('Erro ao processar ranking:', error);
+        const rankingDiv = document.querySelector('.ranking');
+        if(rankingDiv) {
+          rankingDiv.innerHTML = `
+            <h3>🏆 Ranking</h3>
+            <p>Não foi possível carregar o ranking no momento.</p>
+          `;
+        }
+      }
+    }
+    
+    load();
+  </script>
 
   <!-- Firebase SDK -->
   <script type="module">
@@ -98,6 +247,7 @@
     window.firebaseAnalytics = analytics;
     window.firebaseDatabase = database;
     window.logEvent = logEvent;
+    
     window.saveScore = async (score, total) => {
       try {
         const scoresRef = ref(database, 'scores');
@@ -143,119 +293,6 @@
         return [];
       }
     };
-  </script>
-
-  <script>
-    const quiz = [
-      {question: "Quem construiu a arca?", options:["Moisés","Noé","Abraão","Josué"], correct:1},
-      {question: "Em quantos dias Deus criou o mundo?", options:["5","6","7","8"], correct:1},
-      {question: "Quem foi lançado na cova dos leões?", options:["Elias","Daniel","Samuel","Davi"], correct:1},
-      {question: "Qual apóstolo negou Jesus três vezes?", options:["Pedro","João","Tiago","Tomé"], correct:0},
-      {question: "Em qual cidade Jesus nasceu?", options:["Jerusalém","Belém","Nazaré","Betânia"], correct:1},
-      {question: "Quem foi o primeiro homem criado por Deus?", options:["Abraão","Adão","Moisés","Isaac"], correct:1},
-      {question: "Quantos mandamentos Deus deu a Moisés?", options:["7","10","12","5"], correct:1}
-    ];
-    
-    let current=0,score=0;
-    const q=document.getElementById("question"), a=document.getElementById("answers"), next=document.getElementById("next-btn");
-    
-    function load(){
-      const item=quiz[current];
-      q.textContent=item.question;
-      a.innerHTML="";
-      next.style.display="none";
-      item.options.forEach((t,i)=>{
-        const b=document.createElement("button");
-        b.classList.add("option-btn");
-        b.textContent=t;
-        b.onclick=()=>select(i,b);
-        a.appendChild(b);
-      });
-      
-      // Evento do Google Analytics: visualização de pergunta
-      gtag('event', 'pergunta_visualizada', {
-        'event_category': 'Quiz',
-        'event_label': 'Pergunta ' + (current + 1),
-        'value': current + 1
-      });
-    }
-    
-    function select(i,b){
-      const c=quiz[current].correct;
-      Array.from(a.children).forEach(x=>x.disabled=true);
-      
-      if(i===c){
-        score++;
-        b.classList.add("correct");
-        gtag('event', 'resposta_correta', {
-          'event_category': 'Quiz',
-          'event_label': 'Pergunta ' + (current + 1)
-        });
-      }else{
-        b.classList.add("incorrect");
-        a.children[c].classList.add("correct");
-        gtag('event', 'resposta_incorreta', {
-          'event_category': 'Quiz',
-          'event_label': 'Pergunta ' + (current + 1)
-        });
-      }
-      next.style.display="inline-block";
-    }
-    
-    next.onclick=()=>{
-      if(++current<quiz.length)load();
-      else showResult();
-    };
-    
-    async function showResult(){
-      // Salvar pontuação no Firebase
-      if(window.saveScore) {
-        await window.saveScore(score, quiz.length);
-      }
-      
-      // Carregar ranking
-      let rankingHTML = '';
-      if(window.loadRanking) {
-        const ranking = await window.loadRanking();
-        if(ranking.length > 0) {
-          rankingHTML = `
-            <div class="ranking">
-              <h3>🏆 Top 10 Melhores Pontuações</h3>
-              ${ranking.map((item, index) => `
-                <div class="ranking-item">
-                  <span>${index + 1}º lugar</span>
-                  <span><strong>${item.pontuacao}</strong> de ${item.total}</span>
-                </div>
-              `).join('')}
-            </div>
-          `;
-        }
-      }
-      
-      document.getElementById("quiz-content").innerHTML=`
-      <div class="result">
-        Você acertou <strong>${score}</strong> de <strong>${quiz.length}</strong> perguntas! 🌟<br><br>
-        ${score < 3 ? "Continue aprendendo, Deus abençoa quem busca sabedoria! 📖" : 
-          score < 6 ? "Muito bom! Seu conhecimento está crescendo! 🙏" :
-          "Excelente! Você demonstra grande conhecimento bíblico! ✨"}
-      </div>
-      ${rankingHTML}
-      <div class="ad-space"><p>Anúncio</p></div>
-      <div class="share-buttons">
-        <a href="https://api.whatsapp.com/send?text=Eu%20acertei%20${score}%20de%20${quiz.length}%20no%20Quiz%20Cristão!%20Faça%20também:%20${encodeURIComponent(window.location.href)}" target="_blank">📱 Compartilhar no WhatsApp</a>
-        <a href="https://facebook.com/sharer/sharer.php?u=${encodeURIComponent(window.location.href)}" target="_blank">📣 Compartilhar no Facebook</a>
-        <button onclick="window.location.reload()">🔄 Refazer Quiz</button>
-      </div>`;
-      
-      // Evento do Google Analytics: quiz finalizado
-      gtag('event', 'quiz_finalizado', {
-        'event_category': 'Quiz',
-        'event_label': 'Pontuação',
-        'value': score
-      });
-    }
-    
-    load();
   </script>
 
   <!-- Google AdSense (substitua pelo seu código quando aprovado) -->
