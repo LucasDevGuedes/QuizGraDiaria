@@ -589,29 +589,40 @@
 
     let scoreChart = null;
 
+    console.log('🔥 Firebase inicializado no dashboard');
+    console.log('👤 Aguardando verificação de autenticação...');
+
     // Verificar autenticação
     onAuthStateChanged(auth, async (user) => {
+      console.log('🔍 onAuthStateChanged disparado no dashboard');
+      console.log('👤 Usuário detectado:', user ? user.email : 'Nenhum');
+
       const notLoggedWarning = document.getElementById('not-logged-warning');
       const dashboardMain = document.getElementById('dashboard-main');
 
       if (!user) {
         // Usuário não está logado
+        console.log('❌ Nenhum usuário logado - mostrando aviso');
         notLoggedWarning.style.display = 'block';
         dashboardMain.style.display = 'none';
         return;
       }
 
       // Usuário está logado
+      console.log('✅ Usuário logado confirmado:', user.email);
+      console.log('🆔 UID:', user.uid);
       notLoggedWarning.style.display = 'none';
       dashboardMain.style.display = 'block';
 
       try {
         // Buscar dados do usuário no Firebase
+        console.log('📡 Buscando dados do usuário no Firebase...');
         const userRef = ref(database, 'users/' + user.uid);
         const snapshot = await get(userRef);
 
         if (snapshot.exists()) {
           const userData = snapshot.val();
+          console.log('✅ Dados do usuário carregados:', userData);
           const username = userData.username || user.email.split('@')[0];
 
           // Atualizar informações do usuário
@@ -631,6 +642,8 @@
           const avgScore = stats.totalQuizzes > 0 ? Math.round(stats.totalScore / stats.totalQuizzes) : 0;
           document.getElementById('avgScore').textContent = avgScore;
 
+          console.log('📊 Estatísticas carregadas:', stats);
+
           // Carregar histórico de quizzes
           loadQuizHistory(user.uid, userData);
 
@@ -641,10 +654,33 @@
           createScoreChart(userData);
 
         } else {
-          console.error('Dados do usuário não encontrados no Firebase');
+          console.error('❌ Dados do usuário não encontrados no Firebase');
+          console.log('⚠️ Mostrando dashboard com dados zerados');
+          
+          // Mesmo sem dados no Firebase, mostrar o dashboard com valores zerados
+          const username = user.email.split('@')[0];
+          document.getElementById('user-avatar').textContent = username.charAt(0).toUpperCase();
+          document.getElementById('user-name').textContent = username;
+          document.getElementById('user-email').textContent = user.email;
+          document.getElementById('user-joined').textContent = 'Membro desde hoje';
+          
+          // Mostrar valores zerados
+          const emptyStats = { totalQuizzes: 0, totalScore: 0, bestScore: 0 };
+          loadAchievements(emptyStats);
+          createScoreChart({});
+          
+          const historyContainer = document.getElementById('history-container');
+          historyContainer.innerHTML = `
+            <div class="empty-state">
+              <div class="empty-state-icon">📭</div>
+              <p>Você ainda não realizou nenhum quiz.</p>
+              <a href="index.html" class="btn-back">Começar Agora</a>
+            </div>
+          `;
         }
       } catch (error) {
-        console.error('Erro ao carregar dados do dashboard:', error);
+        console.error('❌ Erro ao carregar dados do dashboard:', error);
+        console.error('Detalhes do erro:', error.message);
       }
     });
 
