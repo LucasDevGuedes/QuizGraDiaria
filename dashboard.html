@@ -1,15 +1,14 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Dashboard - Quiz Bíblico</title>
-    <link rel="manifest" href="manifest.json">
-    <meta name="theme-color" content="#4A90E2">
+    <link rel="manifest" href="manifest.json" />
+    <meta name="theme-color" content="#4A90E2" />
 
     <!-- Google AdSense -->
-    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-2972396095728302"
-     crossorigin="anonymous"></script>
+    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-2972396095728302" crossorigin="anonymous"></script>
 
     <!-- Google Analytics -->
     <script async src="https://www.googletagmanager.com/gtag/js?id=G-XXXXXXXXXX"></script>
@@ -19,6 +18,9 @@
       gtag('js', new Date());
       gtag('config', 'G-XXXXXXXXXX');
     </script>
+
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
     <style>
         * {
@@ -241,6 +243,7 @@
             margin-bottom: 30px;
             text-align: center;
             min-height: 280px;
+            min-width: 300px;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -350,6 +353,11 @@
                 </div>
             </div>
 
+            <div class="section">
+                <h3>📈 Estatísticas Gerais</h3>
+                <canvas id="statsChart" width="400" height="200"></canvas>
+            </div>
+
             <div style="text-align: center;">
                 <a href="index.html" class="back-btn">🏠 Voltar ao Início</a>
             </div>
@@ -390,13 +398,17 @@
 
         onAuthStateChanged(auth, async (user) => {
             console.log('🔍 onAuthStateChanged disparado');
-
             if (user) {
                 console.log('✅ Usuário autenticado:', user.email);
                 await loadDashboard(user);
             } else {
-                console.log('❌ Nenhum usuário autenticado');
-                window.location.href = 'index.html';
+                console.log('❌ Nenhum usuário autenticado, aguardando antes de redirecionar...');
+                setTimeout(() => {
+                    if (!auth.currentUser) {
+                        console.log('Redirecionando para index.html');
+                        window.location.href = 'index.html';
+                    }
+                }, 1500);
             }
         });
 
@@ -427,7 +439,6 @@
                     console.log('✅ Dados carregados:', userData);
                 } else {
                     console.log('ℹ️ Nenhum dado encontrado, criando perfil novo');
-                    // Criar perfil inicial
                     await set(userRef, userData);
                 }
 
@@ -435,7 +446,7 @@
                 const quizzes = userData.quizzes || [];
                 const totalQuizzes = quizzes.length;
                 const totalPoints = userData.totalPoints || 0;
-                const avgScore = totalQuizzes > 0 
+                const avgScore = totalQuizzes > 0
                     ? Math.round(quizzes.reduce((sum, q) => sum + (q.score || 0), 0) / totalQuizzes)
                     : 0;
 
@@ -463,6 +474,9 @@
                         console.log('⚠️ AdSense não carregado:', e);
                     }
                 }, 500);
+
+                // Inicializar gráfico
+                initChart(quizzes);
 
             } catch (error) {
                 console.error('❌ Erro ao carregar dashboard:', error);
@@ -516,7 +530,38 @@
             });
         }
 
-        window.logout = async function() {
+        function initChart(quizzes) {
+            const ctx = document.getElementById('statsChart').getContext('2d');
+
+            // Exemplo simples: mostrar pontuação dos últimos quizzes
+            const labels = quizzes.slice(-10).map(q => new Date(q.date).toLocaleDateString('pt-BR'));
+            const data = quizzes.slice(-10).map(q => q.score || 0);
+
+            new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Pontuação (%)',
+                        data: data,
+                        fill: false,
+                        borderColor: '#667eea',
+                        tension: 0.1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            max: 100
+                        }
+                    }
+                }
+            });
+        }
+
+        window.logout = async function () {
             if (confirm('Deseja realmente sair?')) {
                 try {
                     await signOut(auth);
