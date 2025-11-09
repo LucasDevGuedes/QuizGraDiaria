@@ -1,0 +1,640 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Torneios - Quiz Cristão</title>
+  <meta name="description" content="Participe dos torneios e desafie outros jogadores!"/>
+  
+  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-6972396095728302"
+     crossorigin="anonymous"></script>
+  <meta name="google-adsense-account" content="ca-pub-6972396095728302">
+
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-WZ98525YVS"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-WZ98525YVS');
+  </script>
+
+  <meta name="theme-color" content="#FFD700"/>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet"/>
+
+  <style>
+    :root { 
+      --primary: #FFD700; 
+      --primary-dark: #E6C200;
+      --dark: #000; 
+      --light: #fff; 
+      --gray: #f7f7f7; 
+      --success: #4CAF50;
+      --error: #f44336;
+      --info: #2196F3;
+      --radius: 12px; 
+    }
+    
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    
+    body { 
+      font-family: 'Poppins', sans-serif; 
+      background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+      color: var(--dark); 
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+    
+    header { 
+      width: 100%; 
+      background: var(--primary); 
+      padding: 20px; 
+      font-size: 1.8rem; 
+      font-weight: 700; 
+      text-align: center; 
+      box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+    
+    nav {
+      background: rgba(255,255,255,0.95);
+      padding: 12px;
+      text-align: center;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    }
+    
+    nav a {
+      color: var(--dark);
+      text-decoration: none;
+      margin: 0 15px;
+      font-weight: 600;
+      transition: color 0.3s;
+    }
+    
+    nav a:hover {
+      color: var(--primary-dark);
+    }
+    
+    .container {
+      flex: 1;
+      width: 95%;
+      max-width: 1200px;
+      margin: 30px auto;
+      padding: 0 15px;
+    }
+    
+    .page-header {
+      background: var(--light);
+      border-radius: var(--radius);
+      padding: 40px 30px;
+      margin-bottom: 25px;
+      box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+      text-align: center;
+      animation: fadeIn 0.5s ease;
+    }
+    
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    
+    .page-header h1 {
+      margin: 0 0 15px 0;
+      color: var(--dark);
+      font-size: 2.5rem;
+    }
+    
+    .page-header p {
+      color: #666;
+      font-size: 1.1rem;
+      margin: 0;
+    }
+    
+    .tournaments-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 25px;
+      margin-bottom: 25px;
+    }
+    
+    .tournament-card {
+      background: var(--light);
+      border-radius: var(--radius);
+      padding: 30px;
+      box-shadow: 0 5px 20px rgba(0,0,0,0.15);
+      transition: transform 0.3s, box-shadow 0.3s;
+      animation: fadeIn 0.5s ease;
+      position: relative;
+      overflow: hidden;
+    }
+    
+    .tournament-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 5px;
+      background: linear-gradient(90deg, var(--primary), var(--primary-dark));
+    }
+    
+    .tournament-card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 10px 30px rgba(0,0,0,0.25);
+    }
+    
+    .tournament-icon {
+      font-size: 4rem;
+      text-align: center;
+      margin-bottom: 15px;
+    }
+    
+    .tournament-title {
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: var(--dark);
+      margin-bottom: 10px;
+      text-align: center;
+    }
+    
+    .tournament-description {
+      color: #666;
+      margin-bottom: 20px;
+      text-align: center;
+      line-height: 1.6;
+    }
+    
+    .tournament-info {
+      background: var(--gray);
+      border-radius: var(--radius);
+      padding: 15px;
+      margin-bottom: 20px;
+    }
+    
+    .info-item {
+      display: flex;
+      justify-content: space-between;
+      padding: 8px 0;
+      border-bottom: 1px solid #ddd;
+    }
+    
+    .info-item:last-child {
+      border-bottom: none;
+    }
+    
+    .info-label {
+      font-weight: 600;
+      color: #555;
+    }
+    
+    .info-value {
+      font-weight: 700;
+      color: var(--dark);
+    }
+    
+    .tournament-status {
+      display: inline-block;
+      padding: 5px 15px;
+      border-radius: 20px;
+      font-size: 0.85rem;
+      font-weight: 600;
+      margin-bottom: 15px;
+    }
+    
+    .status-active {
+      background: #e8f5e9;
+      color: var(--success);
+    }
+    
+    .status-upcoming {
+      background: #fff3e0;
+      color: #ff9800;
+    }
+    
+    .status-ended {
+      background: #ffebee;
+      color: var(--error);
+    }
+    
+    .join-button {
+      width: 100%;
+      padding: 15px;
+      background: var(--primary);
+      color: var(--dark);
+      border: none;
+      border-radius: var(--radius);
+      font-size: 1.1rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s;
+      font-family: 'Poppins', sans-serif;
+    }
+    
+    .join-button:hover {
+      background: var(--primary-dark);
+      transform: translateY(-2px);
+      box-shadow: 0 5px 15px rgba(255,215,0,0.3);
+    }
+    
+    .join-button:disabled {
+      background: #ccc;
+      cursor: not-allowed;
+      transform: none;
+    }
+    
+    .leaderboard {
+      background: var(--light);
+      border-radius: var(--radius);
+      padding: 30px;
+      box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+      margin-bottom: 25px;
+      animation: fadeIn 0.5s ease;
+    }
+    
+    .leaderboard h2 {
+      margin-top: 0;
+      margin-bottom: 25px;
+      color: var(--dark);
+      text-align: center;
+      font-size: 2rem;
+    }
+    
+    .leaderboard-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 15px;
+      border-bottom: 1px solid #eee;
+      transition: background 0.3s;
+    }
+    
+    .leaderboard-item:hover {
+      background: var(--gray);
+    }
+    
+    .leaderboard-item:last-child {
+      border-bottom: none;
+    }
+    
+    .leaderboard-rank {
+      font-size: 1.5rem;
+      font-weight: 700;
+      width: 50px;
+      text-align: center;
+    }
+    
+    .rank-1 { color: #FFD700; }
+    .rank-2 { color: #C0C0C0; }
+    .rank-3 { color: #CD7F32; }
+    
+    .leaderboard-player {
+      flex: 1;
+      margin: 0 20px;
+    }
+    
+    .player-name {
+      font-weight: 600;
+      color: var(--dark);
+      font-size: 1.1rem;
+    }
+    
+    .player-stats {
+      color: #666;
+      font-size: 0.9rem;
+      margin-top: 3px;
+    }
+    
+    .leaderboard-score {
+      font-size: 1.3rem;
+      font-weight: 700;
+      color: var(--primary-dark);
+    }
+    
+    .ad-space {
+      width: 100%;
+      text-align: center;
+      margin: 25px 0;
+      background: #fffbea;
+      border-radius: var(--radius);
+      padding: 20px;
+      min-height: 120px;
+      border: 2px dashed var(--primary);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    
+    .loading {
+      text-align: center;
+      padding: 40px;
+      color: #666;
+      font-style: italic;
+    }
+    
+    .empty-state {
+      text-align: center;
+      padding: 40px;
+      color: #666;
+    }
+    
+    .empty-state-icon {
+      font-size: 4rem;
+      margin-bottom: 15px;
+    }
+    
+    footer {
+      background: rgba(255,255,255,0.95);
+      padding: 20px;
+      text-align: center;
+      font-size: 0.9rem;
+      color: #555;
+      margin-top: 30px;
+    }
+    
+    footer a {
+      color: var(--dark);
+      text-decoration: underline;
+      margin: 0 10px;
+    }
+    
+    @media (max-width: 768px) {
+      header {
+        font-size: 1.4rem;
+        padding: 15px;
+      }
+      
+      .page-header h1 {
+        font-size: 1.8rem;
+      }
+      
+      .tournaments-grid {
+        grid-template-columns: 1fr;
+      }
+      
+      .leaderboard-item {
+        flex-wrap: wrap;
+      }
+      
+      .leaderboard-player {
+        margin: 10px 0;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header>🏆 Torneios</header>
+  
+  <nav>
+    <a href="index.html">🏠 Início</a>
+    <a href="dashboard.html">📊 Dashboard</a>
+    <a href="torneios.html">🏆 Torneios</a>
+  </nav>
+
+  <div class="container">
+    <div class="page-header">
+      <h1>🏆 Torneios e Competições</h1>
+      <p>Desafie outros jogadores e prove seu conhecimento bíblico!</p>
+    </div>
+
+    <div class="tournaments-grid">
+      <div class="tournament-card">
+        <div class="tournament-icon">🔥</div>
+        <div style="text-align: center;">
+          <span class="tournament-status status-active">🟢 ATIVO</span>
+        </div>
+        <h3 class="tournament-title">Torneio Semanal</h3>
+        <p class="tournament-description">Competição semanal com os melhores jogadores. Termine no top 10 para ganhar badges exclusivos!</p>
+        
+        <div class="tournament-info">
+          <div class="info-item">
+            <span class="info-label">📅 Duração:</span>
+            <span class="info-value">7 dias</span>
+          </div>
+          <div class="info-item">
+            <span class="info-label">👥 Participantes:</span>
+            <span class="info-value">247</span>
+          </div>
+          <div class="info-item">
+            <span class="info-label">🎁 Prêmio:</span>
+            <span class="info-value">Badge Especial</span>
+          </div>
+          <div class="info-item">
+            <span class="info-label">⏰ Termina em:</span>
+            <span class="info-value">3 dias</span>
+          </div>
+        </div>
+        
+        <button class="join-button" onclick="alert('Funcionalidade em desenvolvimento! Em breve você poderá participar dos torneios.')">
+          🎯 Participar Agora
+        </button>
+      </div>
+
+      <div class="tournament-card">
+        <div class="tournament-icon">⚡</div>
+        <div style="text-align: center;">
+          <span class="tournament-status status-active">🟢 ATIVO</span>
+        </div>
+        <h3 class="tournament-title">Desafio Relâmpago</h3>
+        <p class="tournament-description">Responda o máximo de perguntas em 5 minutos! Velocidade e precisão são essenciais.</p>
+        
+        <div class="tournament-info">
+          <div class="info-item">
+            <span class="info-label">⏱️ Tempo:</span>
+            <span class="info-value">5 minutos</span>
+          </div>
+          <div class="info-item">
+            <span class="info-label">👥 Participantes:</span>
+            <span class="info-value">89</span>
+          </div>
+          <div class="info-item">
+            <span class="info-label">🎁 Prêmio:</span>
+            <span class="info-value">Badge Velocista</span>
+          </div>
+          <div class="info-item">
+            <span class="info-label">🔄 Reinicia:</span>
+            <span class="info-value">Diariamente</span>
+          </div>
+        </div>
+        
+        <button class="join-button" onclick="alert('Funcionalidade em desenvolvimento! Em breve você poderá participar dos torneios.')">
+          ⚡ Começar Desafio
+        </button>
+      </div>
+
+      <div class="tournament-card">
+        <div class="tournament-icon">👑</div>
+        <div style="text-align: center;">
+          <span class="tournament-status status-upcoming">🟡 EM BREVE</span>
+        </div>
+        <h3 class="tournament-title">Campeonato Mensal</h3>
+        <p class="tournament-description">O grande campeonato do mês! Prêmios especiais para os 3 primeiros colocados.</p>
+        
+        <div class="tournament-info">
+          <div class="info-item">
+            <span class="info-label">📅 Início:</span>
+            <span class="info-value">01/12/2025</span>
+          </div>
+          <div class="info-item">
+            <span class="info-label">📅 Duração:</span>
+            <span class="info-value">30 dias</span>
+          </div>
+          <div class="info-item">
+            <span class="info-label">🎁 Prêmios:</span>
+            <span class="info-value">Top 3</span>
+          </div>
+          <div class="info-item">
+            <span class="info-label">⏰ Começa em:</span>
+            <span class="info-value">15 dias</span>
+          </div>
+        </div>
+        
+        <button class="join-button" disabled>
+          🔔 Notificar-me
+        </button>
+      </div>
+    </div>
+
+    <div class="ad-space">
+      <ins class="adsbygoogle"
+           style="display:block"
+           data-ad-client="ca-pub-6972396095728302"
+           data-ad-format="auto"
+           data-full-width-responsive="true"></ins>
+      <script>
+           (adsbygoogle = window.adsbygoogle || []).push({});
+      </script>
+    </div>
+
+    <div class="leaderboard">
+      <h2>🏆 Ranking Global</h2>
+      <div id="leaderboard-content">
+        <div class="loading">Carregando ranking...</div>
+      </div>
+    </div>
+  </div>
+
+  <footer>
+    © 2025 Quiz Cristão | Todos os direitos reservados<br>
+    <a href="sobre.html">Sobre</a> | 
+    <a href="contato.html">Contato</a> | 
+    <a href="privacidade.html">Política de Privacidade</a>
+  </footer>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/12.5.0/firebase-app.js";
+    import { getAnalytics, logEvent } from "https://www.gstatic.com/firebasejs/12.5.0/firebase-analytics.js";
+    import { getDatabase, ref, get, query, orderByChild, limitToLast } from "https://www.gstatic.com/firebasejs/12.5.0/firebase-database.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyBj2RLZGicJnVfCV6BJafB91bvH65rC8zM",
+      authDomain: "quizgracadiaria.firebaseapp.com",
+      projectId: "quizgracadiaria",
+      storageBucket: "quizgracadiaria.firebasestorage.app",
+      messagingSenderId: "921062227849",
+      appId: "1:921062227849:web:71ecd5eaf45c0e44aa6b58",
+      measurementId: "G-4X34EZH430"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const analytics = getAnalytics(app);
+    const database = getDatabase(app);
+
+    logEvent(analytics, 'page_view', {
+      page_title: 'Torneios',
+      page_location: window.location.href
+    });
+
+    // Carregar ranking global
+    async function loadGlobalLeaderboard() {
+      try {
+        const leaderboardContent = document.getElementById('leaderboard-content');
+        const quizTypes = ['geral', 'novo-testamento', 'antigo-testamento', 'parabolas', 'personagens'];
+        let allScores = [];
+        
+        for (const quizType of quizTypes) {
+          const scoresRef = ref(database, `scores/${quizType}`);
+          const topScoresQuery = query(scoresRef, orderByChild('pontuacao'), limitToLast(50));
+          const snapshot = await get(topScoresQuery);
+          
+          if (snapshot.exists()) {
+            snapshot.forEach((childSnapshot) => {
+              allScores.push(childSnapshot.val());
+            });
+          }
+        }
+        
+        if (allScores.length > 0) {
+          // Agrupar por usuário e calcular pontuação total
+          const userScores = {};
+          
+          allScores.forEach(score => {
+            const userId = score.userId || 'anonymous';
+            const username = score.username || 'Anônimo';
+            
+            if (!userScores[userId]) {
+              userScores[userId] = {
+                username: username,
+                totalScore: 0,
+                totalQuizzes: 0,
+                avgPercentage: 0
+              };
+            }
+            
+            userScores[userId].totalScore += score.pontuacao;
+            userScores[userId].totalQuizzes += 1;
+          });
+          
+          // Converter para array e calcular média
+          const leaderboard = Object.values(userScores).map(user => {
+            user.avgPercentage = Math.round((user.totalScore / (user.totalQuizzes * 10)) * 100);
+            return user;
+          });
+          
+          // Ordenar por pontuação total
+          leaderboard.sort((a, b) => b.totalScore - a.totalScore);
+          
+          // Pegar top 10
+          const top10 = leaderboard.slice(0, 10);
+          
+          leaderboardContent.innerHTML = top10.map((user, index) => {
+            const rank = index + 1;
+            const rankClass = rank <= 3 ? `rank-${rank}` : '';
+            const medal = rank === 1 ? '🥇' : rank === 2 ? '🥈' : rank === 3 ? '🥉' : rank;
+            
+            return `
+              <div class="leaderboard-item">
+                <div class="leaderboard-rank ${rankClass}">${medal}</div>
+                <div class="leaderboard-player">
+                  <div class="player-name">${user.username}</div>
+                  <div class="player-stats">${user.totalQuizzes} quizzes • ${user.avgPercentage}% de acertos</div>
+                </div>
+                <div class="leaderboard-score">${user.totalScore} pts</div>
+              </div>
+            `;
+          }).join('');
+        } else {
+          leaderboardContent.innerHTML = `
+            <div class="empty-state">
+              <div class="empty-state-icon">🏆</div>
+              <p>Nenhuma pontuação registrada ainda. Seja o primeiro!</p>
+            </div>
+          `;
+        }
+      } catch (error) {
+        console.error('Erro ao carregar ranking:', error);
+        document.getElementById('leaderboard-content').innerHTML = `
+          <div class="empty-state">
+            <div class="empty-state-icon">❌</div>
+            <p>Erro ao carregar ranking. Tente novamente mais tarde.</p>
+          </div>
+        `;
+      }
+    }
+
+    // Inicializar
+    loadGlobalLeaderboard();
+  </script>
+</body>
+</html>
