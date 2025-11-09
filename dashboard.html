@@ -1,948 +1,532 @@
 <!DOCTYPE html>
-<html lang="pt-br">
+<html lang="pt-BR">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Dashboard - Quiz Cristão</title>
-  <meta name="description" content="Acompanhe seu progresso, pontuação e conquistas no Quiz Cristão. Veja como está seu desempenho nos quizzes bíblicos.">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - Quiz Bíblico</title>
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#4A90E2">
 
-  <!-- Google AdSense -->
-  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-6972396095728302"
+    <!-- Google AdSense -->
+    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-2972396095728302"
      crossorigin="anonymous"></script>
 
-  <!-- Google Analytics -->
-  <script async src="https://www.googletagmanager.com/gtag/js?id=G-WZ98525YVS"></script>
-  <script>
-    window.dataLayer = window.dataLayer || [];
-    function gtag(){dataLayer.push(arguments);}
-    gtag('js', new Date());
-    gtag('config', 'G-WZ98525YVS');
-  </script>
+    <!-- Google Analytics -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-XXXXXXXXXX"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', 'G-XXXXXXXXXX');
+    </script>
 
-  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
 
-  <style>
-    :root {
-      --primary: #FFD700;
-      --primary-dark: #E6C200;
-      --secondary: #222;
-      --success: #4CAF50;
-      --error: #f44336;
-      --light: #fff;
-      --gray: #f7f7f7;
-      --dark-gray: #666;
-      --radius: 12px;
-    }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
 
-    * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-    }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
 
-    body {
-      font-family: 'Poppins', sans-serif;
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-      color: var(--secondary);
-      min-height: 100vh;
-      display: flex;
-      flex-direction: column;
-    }
+        header {
+            background: white;
+            padding: 20px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            margin-bottom: 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
 
-    header {
-      background: var(--primary);
-      padding: 20px;
-      text-align: center;
-      font-size: 1.8rem;
-      font-weight: 700;
-      box-shadow: 0 4px 15px rgba(0,0,0,0.15);
-      position: sticky;
-      top: 0;
-      z-index: 100;
-    }
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
 
-    nav {
-      background: rgba(255,255,255,0.95);
-      padding: 12px;
-      text-align: center;
-      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      flex-wrap: wrap;
-      gap: 10px;
-    }
+        .user-avatar {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 24px;
+            font-weight: bold;
+        }
 
-    nav a {
-      color: var(--secondary);
-      text-decoration: none;
-      font-weight: 600;
-      margin: 0 12px;
-      transition: all 0.3s;
-      padding: 8px 15px;
-      border-radius: 8px;
-    }
+        .user-details h2 {
+            color: #333;
+            font-size: 24px;
+            margin-bottom: 5px;
+        }
 
-    nav a:hover {
-      color: var(--primary-dark);
-      background: var(--gray);
-    }
+        .user-details p {
+            color: #666;
+            font-size: 14px;
+        }
 
-    .user-info {
-      margin-left: auto;
-      display: flex;
-      align-items: center;
-      gap: 10px;
-    }
+        .logout-btn {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: bold;
+            transition: transform 0.3s;
+        }
 
-    .user-avatar-nav {
-      width: 35px;
-      height: 35px;
-      border-radius: 50%;
-      background: var(--primary);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-weight: 700;
-      font-size: 1.2rem;
-    }
+        .logout-btn:hover {
+            transform: scale(1.05);
+        }
 
-    .btn-logout {
-      background: var(--secondary);
-      color: var(--light);
-      padding: 8px 20px;
-      border-radius: 8px;
-      text-decoration: none;
-      font-weight: 600;
-      transition: all 0.3s;
-      border: none;
-      cursor: pointer;
-      font-family: 'Poppins', sans-serif;
-      font-size: 0.95rem;
-    }
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
 
-    .btn-logout:hover {
-      background: var(--primary);
-      color: var(--secondary);
-      transform: translateY(-2px);
-    }
+        .stat-card {
+            background: white;
+            padding: 25px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            text-align: center;
+            transition: transform 0.3s;
+        }
 
-    .container {
-      flex: 1;
-      width: 95%;
-      max-width: 1200px;
-      margin: 30px auto;
-      padding: 0 15px;
-    }
+        .stat-card:hover {
+            transform: translateY(-5px);
+        }
 
-    .dashboard-content {
-      background: var(--light);
-      border-radius: var(--radius);
-      padding: 40px 30px;
-      box-shadow: 0 10px 40px rgba(0,0,0,0.2);
-      animation: fadeIn 0.6s ease;
-    }
+        .stat-icon {
+            font-size: 48px;
+            margin-bottom: 15px;
+        }
 
-    @keyframes fadeIn {
-      from { opacity: 0; transform: translateY(30px); }
-      to { opacity: 1; transform: translateY(0); }
-    }
+        .stat-value {
+            font-size: 36px;
+            font-weight: bold;
+            color: #667eea;
+            margin-bottom: 10px;
+        }
 
-    .user-section {
-      text-align: center;
-      margin-bottom: 40px;
-      padding-bottom: 30px;
-      border-bottom: 2px solid var(--gray);
-    }
+        .stat-label {
+            color: #666;
+            font-size: 16px;
+        }
 
-    .user-avatar {
-      width: 100px;
-      height: 100px;
-      border-radius: 50%;
-      background: linear-gradient(135deg, var(--primary), var(--primary-dark));
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 3rem;
-      font-weight: 700;
-      margin: 0 auto 15px;
-      box-shadow: 0 5px 20px rgba(255, 215, 0, 0.4);
-      color: var(--secondary);
-    }
+        .section {
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            margin-bottom: 30px;
+        }
 
-    .user-name {
-      font-size: 1.8rem;
-      color: var(--secondary);
-      font-weight: 700;
-      margin-bottom: 5px;
-    }
+        .section h3 {
+            color: #333;
+            font-size: 24px;
+            margin-bottom: 20px;
+            border-bottom: 3px solid #667eea;
+            padding-bottom: 10px;
+        }
 
-    .user-email {
-      font-size: 1rem;
-      color: var(--dark-gray);
-      margin-bottom: 10px;
-    }
+        .achievements-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+            gap: 20px;
+        }
 
-    .user-joined {
-      font-size: 0.9rem;
-      color: var(--dark-gray);
-    }
+        .achievement {
+            text-align: center;
+            padding: 20px;
+            border-radius: 10px;
+            background: #f8f9fa;
+            transition: all 0.3s;
+        }
 
-    h2 {
-      text-align: center;
-      color: var(--secondary);
-      margin: 40px 0 25px;
-      font-size: 1.8rem;
-    }
+        .achievement.unlocked {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
 
-    .stats-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-      gap: 25px;
-      margin: 30px 0;
-    }
+        .achievement.locked {
+            opacity: 0.5;
+            filter: grayscale(100%);
+        }
 
-    .stat-card {
-      background: var(--gray);
-      padding: 25px;
-      border-radius: var(--radius);
-      text-align: center;
-      box-shadow: 0 3px 15px rgba(0,0,0,0.1);
-      transition: all 0.3s;
-    }
+        .achievement-icon {
+            font-size: 48px;
+            margin-bottom: 10px;
+        }
 
-    .stat-card:hover {
-      transform: translateY(-5px);
-      box-shadow: 0 8px 25px rgba(0,0,0,0.15);
-    }
+        .achievement-name {
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
 
-    .stat-icon {
-      font-size: 2.5rem;
-      margin-bottom: 10px;
-    }
+        .achievement-desc {
+            font-size: 12px;
+            opacity: 0.8;
+        }
 
-    .stat-number {
-      font-size: 2.5rem;
-      color: var(--primary-dark);
-      font-weight: 700;
-      margin: 10px 0;
-    }
+        .quiz-history {
+            overflow-x: auto;
+        }
 
-    .stat-label {
-      color: var(--dark-gray);
-      font-size: 1rem;
-      font-weight: 600;
-    }
+        .history-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
 
-    .chart-container {
-      background: var(--gray);
-      padding: 30px;
-      border-radius: var(--radius);
-      margin: 30px 0;
-      box-shadow: 0 3px 15px rgba(0,0,0,0.1);
-    }
+        .history-table th,
+        .history-table td {
+            padding: 15px;
+            text-align: left;
+            border-bottom: 1px solid #eee;
+        }
 
-    .chart-container h3 {
-      text-align: center;
-      margin-bottom: 20px;
-      color: var(--secondary);
-    }
+        .history-table th {
+            background: #667eea;
+            color: white;
+            font-weight: bold;
+        }
 
-    .achievements {
-      margin: 40px 0;
-    }
+        .history-table tr:hover {
+            background: #f8f9fa;
+        }
 
-    .achievements-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-      gap: 20px;
-      margin-top: 20px;
-    }
+        .back-btn {
+            display: inline-block;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 15px 30px;
+            border-radius: 25px;
+            text-decoration: none;
+            font-weight: bold;
+            transition: transform 0.3s;
+            margin-top: 20px;
+        }
 
-    .achievement-card {
-      background: var(--gray);
-      padding: 20px;
-      border-radius: var(--radius);
-      display: flex;
-      align-items: center;
-      gap: 15px;
-      box-shadow: 0 3px 10px rgba(0,0,0,0.1);
-      transition: all 0.3s;
-    }
+        .back-btn:hover {
+            transform: scale(1.05);
+        }
 
-    .achievement-card:hover {
-      transform: translateY(-3px);
-      box-shadow: 0 5px 20px rgba(0,0,0,0.15);
-    }
+        /* AdSense Container */
+        .ad-container {
+            background: white;
+            padding: 20px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            margin-bottom: 30px;
+            text-align: center;
+            min-height: 280px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
 
-    .achievement-card.locked {
-      opacity: 0.5;
-      filter: grayscale(100%);
-    }
+        .loading {
+            text-align: center;
+            padding: 50px;
+            color: white;
+            font-size: 24px;
+        }
 
-    .achievement-icon {
-      font-size: 2.5rem;
-    }
+        @media (max-width: 768px) {
+            header {
+                flex-direction: column;
+                text-align: center;
+            }
 
-    .achievement-info {
-      flex: 1;
-    }
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
 
-    .achievement-title {
-      font-weight: 700;
-      color: var(--secondary);
-      margin-bottom: 5px;
-    }
-
-    .achievement-desc {
-      font-size: 0.85rem;
-      color: var(--dark-gray);
-    }
-
-    .history-section {
-      margin: 40px 0;
-    }
-
-    .history-table {
-      width: 100%;
-      background: var(--gray);
-      border-radius: var(--radius);
-      overflow: hidden;
-      box-shadow: 0 3px 15px rgba(0,0,0,0.1);
-    }
-
-    .history-table table {
-      width: 100%;
-      border-collapse: collapse;
-    }
-
-    .history-table th {
-      background: var(--secondary);
-      color: var(--light);
-      padding: 15px;
-      text-align: left;
-      font-weight: 600;
-    }
-
-    .history-table td {
-      padding: 15px;
-      border-bottom: 1px solid #ddd;
-    }
-
-    .history-table tr:last-child td {
-      border-bottom: none;
-    }
-
-    .history-table tr:hover {
-      background: rgba(255, 215, 0, 0.1);
-    }
-
-    .score-badge {
-      display: inline-block;
-      padding: 5px 12px;
-      border-radius: 20px;
-      font-weight: 600;
-      font-size: 0.9rem;
-    }
-
-    .score-excellent {
-      background: #4CAF50;
-      color: white;
-    }
-
-    .score-good {
-      background: #2196F3;
-      color: white;
-    }
-
-    .score-average {
-      background: #FF9800;
-      color: white;
-    }
-
-    .score-poor {
-      background: #f44336;
-      color: white;
-    }
-
-    .warning {
-      background: #fff3cd;
-      color: #856404;
-      padding: 20px;
-      border-radius: var(--radius);
-      margin: 30px 0;
-      text-align: center;
-      border: 2px solid #ffc107;
-    }
-
-    .warning h3 {
-      margin-bottom: 15px;
-    }
-
-    .btn-back {
-      display: inline-block;
-      margin-top: 20px;
-      background: var(--secondary);
-      color: var(--light);
-      padding: 12px 30px;
-      border-radius: 8px;
-      text-decoration: none;
-      transition: all 0.3s;
-      font-weight: 600;
-    }
-
-    .btn-back:hover {
-      background: var(--primary);
-      color: var(--secondary);
-      transform: translateY(-3px);
-    }
-
-    .ad-space {
-      width: 100%;
-      text-align: center;
-      margin: 30px 0;
-      background: #fffbea;
-      border-radius: var(--radius);
-      padding: 20px;
-      min-height: 120px;
-      border: 2px dashed var(--primary);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
-
-    footer {
-      background: rgba(255,255,255,0.95);
-      padding: 20px;
-      text-align: center;
-      font-size: 0.9rem;
-      color: #555;
-      margin-top: 30px;
-    }
-
-    footer a {
-      color: var(--secondary);
-      text-decoration: underline;
-      margin: 0 10px;
-    }
-
-    .empty-state {
-      text-align: center;
-      padding: 40px;
-      color: var(--dark-gray);
-    }
-
-    .empty-state-icon {
-      font-size: 4rem;
-      margin-bottom: 15px;
-      opacity: 0.5;
-    }
-
-    @media (max-width: 768px) {
-      .user-name { font-size: 1.4rem; }
-      .stats-grid { grid-template-columns: 1fr; }
-      .achievements-grid { grid-template-columns: 1fr; }
-      nav { flex-direction: column; }
-      .user-info { margin-left: 0; margin-top: 10px; width: 100%; justify-content: center; }
-      .history-table { overflow-x: auto; }
-    }
-  </style>
+            .achievements-grid {
+                grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+            }
+        }
+    </style>
 </head>
 <body>
-  <header>📊 Dashboard - Quiz Cristão</header>
-
-  <nav>
-    <a href="index.html">🏠 Início</a>
-    <a href="torneios.html">🏆 Torneios</a>
-    <a href="sobre.html">ℹ️ Sobre</a>
-    <a href="contato.html">📧 Contato</a>
-    <a href="privacidade.html">🔒 Privacidade</a>
-    
-    <div class="user-info" id="nav-user-info">
-      <button class="btn-logout" onclick="logout()">Sair</button>
-    </div>
-  </nav>
-
-  <div class="container">
-    <div class="dashboard-content">
-      <!-- Aviso para usuários não logados -->
-      <div class="warning" id="not-logged-warning" style="display:none;">
-        <h3>⚠️ Você precisa estar logado</h3>
-        <p>Para visualizar seu progresso e estatísticas, faça login ou crie uma conta.</p>
-        <a href="index.html" class="btn-back">Entrar / Registrar-se</a>
-      </div>
-
-      <!-- Conteúdo do Dashboard (visível apenas para usuários logados) -->
-      <div id="dashboard-main" style="display:none;">
-        <!-- Seção do Usuário -->
-        <div class="user-section">
-          <div class="user-avatar" id="user-avatar">?</div>
-          <div class="user-name" id="user-name">Carregando...</div>
-          <div class="user-email" id="user-email"></div>
-          <div class="user-joined" id="user-joined"></div>
+    <div class="container">
+        <div class="loading" id="loading">
+            ⏳ Carregando seu dashboard...
         </div>
 
-        <!-- Estatísticas Principais -->
-        <h2>📈 Suas Estatísticas</h2>
-        <div class="stats-grid">
-          <div class="stat-card">
-            <div class="stat-icon">🎯</div>
-            <div class="stat-number" id="totalQuizzes">0</div>
-            <div class="stat-label">Quizzes Realizados</div>
-          </div>
-          <div class="stat-card">
-            <div class="stat-icon">⭐</div>
-            <div class="stat-number" id="totalScore">0</div>
-            <div class="stat-label">Pontos Totais</div>
-          </div>
-          <div class="stat-card">
-            <div class="stat-icon">🏆</div>
-            <div class="stat-number" id="bestScore">0</div>
-            <div class="stat-label">Melhor Pontuação</div>
-          </div>
-          <div class="stat-card">
-            <div class="stat-icon">📊</div>
-            <div class="stat-number" id="avgScore">0</div>
-            <div class="stat-label">Média de Pontos</div>
-          </div>
-        </div>
+        <div id="dashboardContent" style="display: none;">
+            <header>
+                <div class="user-info">
+                    <div class="user-avatar" id="userAvatar">?</div>
+                    <div class="user-details">
+                        <h2 id="userName">Carregando...</h2>
+                        <p id="userEmail">...</p>
+                    </div>
+                </div>
+                <button class="logout-btn" onclick="logout()">🚪 Sair</button>
+            </header>
 
-        <!-- Anúncio -->
-        <div class="ad-space">
-          <ins class="adsbygoogle"
-               style="display:block"
-               data-ad-client="ca-pub-6972396095728302"
-               data-ad-format="auto"
-               data-full-width-responsive="true"></ins>
-          <script>
-               (adsbygoogle = window.adsbygoogle || []).push({});
-          </script>
-        </div>
-
-        <!-- Gráfico de Evolução -->
-        <div class="chart-container">
-          <h3>📈 Evolução das Pontuações</h3>
-          <canvas id="scoreChart"></canvas>
-        </div>
-
-        <!-- Conquistas -->
-        <div class="achievements">
-          <h2>🏅 Conquistas</h2>
-          <div class="achievements-grid" id="achievements-grid">
-            <!-- Conquistas serão inseridas aqui -->
-          </div>
-        </div>
-
-        <!-- Histórico de Quizzes -->
-        <div class="history-section">
-          <h2>📜 Histórico de Quizzes</h2>
-          <div class="history-table" id="history-container">
-            <!-- Histórico será inserido aqui -->
-          </div>
-        </div>
-
-        <!-- Anúncio -->
-        <div class="ad-space">
-          <ins class="adsbygoogle"
-               style="display:block"
-               data-ad-client="ca-pub-6972396095728302"
-               data-ad-format="auto"
-               data-full-width-responsive="true"></ins>
-          <script>
-               (adsbygoogle = window.adsbygoogle || []).push({});
-          </script>
-        </div>
-
-        <div style="text-align:center; margin-top: 40px;">
-          <a href="index.html" class="btn-back">🏠 Voltar ao Início</a>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <footer>
-    © 2025 Quiz Cristão | Todos os direitos reservados<br>
-    <a href="sobre.html">Sobre</a> | 
-    <a href="contato.html">Contato</a> | 
-    <a href="privacidade.html">Política de Privacidade</a>
-  </footer>
-
-  <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/12.5.0/firebase-app.js";
-    import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/12.5.0/firebase-auth.js";
-    import { getDatabase, ref, get } from "https://www.gstatic.com/firebasejs/12.5.0/firebase-database.js";
-
-    const firebaseConfig = {
-      apiKey: "AIzaSyBj2RLZGicJnVfCV6BJafB91bvH65rC8zM",
-      authDomain: "quizgracadiaria.firebaseapp.com",
-      projectId: "quizgracadiaria",
-      storageBucket: "quizgracadiaria.firebasestorage.app",
-      messagingSenderId: "921062227849",
-      appId: "1:921062227849:web:71ecd5eaf45c0e44aa6b58",
-      measurementId: "G-4X34EZH430"
-    };
-
-    const app = initializeApp(firebaseConfig);
-    const auth = getAuth(app);
-    const database = getDatabase(app);
-
-    let scoreChart = null;
-
-    console.log('🔥 Firebase inicializado no dashboard');
-    console.log('👤 Aguardando verificação de autenticação...');
-
-    // Verificar autenticação
-    onAuthStateChanged(auth, async (user) => {
-      console.log('🔍 onAuthStateChanged disparado no dashboard');
-      console.log('👤 Usuário detectado:', user ? user.email : 'Nenhum');
-
-      const notLoggedWarning = document.getElementById('not-logged-warning');
-      const dashboardMain = document.getElementById('dashboard-main');
-
-      if (!user) {
-        // Usuário não está logado
-        console.log('❌ Nenhum usuário logado - mostrando aviso');
-        notLoggedWarning.style.display = 'block';
-        dashboardMain.style.display = 'none';
-        return;
-      }
-
-      // Usuário está logado
-      console.log('✅ Usuário logado confirmado:', user.email);
-      console.log('🆔 UID:', user.uid);
-      notLoggedWarning.style.display = 'none';
-      dashboardMain.style.display = 'block';
-
-      try {
-        // Buscar dados do usuário no Firebase
-        console.log('📡 Buscando dados do usuário no Firebase...');
-        const userRef = ref(database, 'users/' + user.uid);
-        const snapshot = await get(userRef);
-
-        if (snapshot.exists()) {
-          const userData = snapshot.val();
-          console.log('✅ Dados do usuário carregados:', userData);
-          const username = userData.username || user.email.split('@')[0];
-
-          // Atualizar informações do usuário
-          document.getElementById('user-avatar').textContent = username.charAt(0).toUpperCase();
-          document.getElementById('user-name').textContent = username;
-          document.getElementById('user-email').textContent = user.email;
-          
-          const joinedDate = userData.createdAt ? new Date(userData.createdAt).toLocaleDateString('pt-BR') : 'Data não disponível';
-          document.getElementById('user-joined').textContent = `Membro desde ${joinedDate}`;
-
-          // Atualizar estatísticas
-          const stats = userData.stats || { totalQuizzes: 0, totalScore: 0, bestScore: 0 };
-          document.getElementById('totalQuizzes').textContent = stats.totalQuizzes || 0;
-          document.getElementById('totalScore').textContent = stats.totalScore || 0;
-          document.getElementById('bestScore').textContent = stats.bestScore || 0;
-          
-          const avgScore = stats.totalQuizzes > 0 ? Math.round(stats.totalScore / stats.totalQuizzes) : 0;
-          document.getElementById('avgScore').textContent = avgScore;
-
-          console.log('📊 Estatísticas carregadas:', stats);
-
-          // Carregar histórico de quizzes
-          loadQuizHistory(user.uid, userData);
-
-          // Carregar conquistas
-          loadAchievements(stats);
-
-          // Criar gráfico
-          createScoreChart(userData);
-
-        } else {
-          console.error('❌ Dados do usuário não encontrados no Firebase');
-          console.log('⚠️ Mostrando dashboard com dados zerados');
-          
-          // Mesmo sem dados no Firebase, mostrar o dashboard com valores zerados
-          const username = user.email.split('@')[0];
-          document.getElementById('user-avatar').textContent = username.charAt(0).toUpperCase();
-          document.getElementById('user-name').textContent = username;
-          document.getElementById('user-email').textContent = user.email;
-          document.getElementById('user-joined').textContent = 'Membro desde hoje';
-          
-          // Mostrar valores zerados
-          const emptyStats = { totalQuizzes: 0, totalScore: 0, bestScore: 0 };
-          loadAchievements(emptyStats);
-          createScoreChart({});
-          
-          const historyContainer = document.getElementById('history-container');
-          historyContainer.innerHTML = `
-            <div class="empty-state">
-              <div class="empty-state-icon">📭</div>
-              <p>Você ainda não realizou nenhum quiz.</p>
-              <a href="index.html" class="btn-back">Começar Agora</a>
+            <!-- AdSense Banner -->
+            <div class="ad-container">
+                <ins class="adsbygoogle"
+                     style="display:block"
+                     data-ad-client="ca-pub-2972396095728302"
+                     data-ad-slot="1234567890"
+                     data-ad-format="auto"
+                     data-full-width-responsive="true"></ins>
             </div>
-          `;
-        }
-      } catch (error) {
-        console.error('❌ Erro ao carregar dados do dashboard:', error);
-        console.error('Detalhes do erro:', error.message);
-      }
-    });
 
-    // Função para carregar histórico de quizzes
-    async function loadQuizHistory(uid, userData) {
-      const historyContainer = document.getElementById('history-container');
-      
-      try {
-        const historyRef = ref(database, `users/${uid}/history`);
-        const historySnapshot = await get(historyRef);
-
-        if (historySnapshot.exists()) {
-          const history = historySnapshot.val();
-          const historyArray = Object.values(history).sort((a, b) => new Date(b.date) - new Date(a.date));
-
-          let tableHTML = `
-            <table>
-              <thead>
-                <tr>
-                  <th>Data</th>
-                  <th>Quiz</th>
-                  <th>Pontuação</th>
-                  <th>Acertos</th>
-                  <th>Nível</th>
-                </tr>
-              </thead>
-              <tbody>
-          `;
-
-          historyArray.forEach(item => {
-            const date = new Date(item.date).toLocaleDateString('pt-BR');
-            const scoreClass = item.score >= 80 ? 'score-excellent' : 
-                              item.score >= 60 ? 'score-good' : 
-                              item.score >= 40 ? 'score-average' : 'score-poor';
-
-            tableHTML += `
-              <tr>
-                <td>${date}</td>
-                <td>${item.quizName || 'Quiz'}</td>
-                <td><span class="score-badge ${scoreClass}">${item.score} pts</span></td>
-                <td>${item.correct || 0}/${item.total || 0}</td>
-                <td>${item.difficulty || 'N/A'}</td>
-              </tr>
-            `;
-          });
-
-          tableHTML += '</tbody></table>';
-          historyContainer.innerHTML = tableHTML;
-        } else {
-          historyContainer.innerHTML = `
-            <div class="empty-state">
-              <div class="empty-state-icon">📭</div>
-              <p>Você ainda não realizou nenhum quiz.</p>
-              <a href="index.html" class="btn-back">Começar Agora</a>
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-icon">🎯</div>
+                    <div class="stat-value" id="totalQuizzes">0</div>
+                    <div class="stat-label">Quizzes Realizados</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">⭐</div>
+                    <div class="stat-value" id="totalPoints">0</div>
+                    <div class="stat-label">Pontos Totais</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">📊</div>
+                    <div class="stat-value" id="avgScore">0%</div>
+                    <div class="stat-label">Média de Acertos</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">🏆</div>
+                    <div class="stat-value" id="achievements">0</div>
+                    <div class="stat-label">Conquistas</div>
+                </div>
             </div>
-          `;
-        }
-      } catch (error) {
-        console.error('Erro ao carregar histórico:', error);
-        historyContainer.innerHTML = `
-          <div class="empty-state">
-            <div class="empty-state-icon">⚠️</div>
-            <p>Erro ao carregar histórico de quizzes.</p>
-          </div>
-        `;
-      }
-    }
 
-    // Função para carregar conquistas
-    function loadAchievements(stats) {
-      const achievementsGrid = document.getElementById('achievements-grid');
-      
-      const achievements = [
-        {
-          icon: '🎯',
-          title: 'Primeiros Passos',
-          desc: 'Complete seu primeiro quiz',
-          unlocked: stats.totalQuizzes >= 1
-        },
-        {
-          icon: '🔥',
-          title: 'Entusiasta',
-          desc: 'Complete 5 quizzes',
-          unlocked: stats.totalQuizzes >= 5
-        },
-        {
-          icon: '⭐',
-          title: 'Dedicado',
-          desc: 'Complete 10 quizzes',
-          unlocked: stats.totalQuizzes >= 10
-        },
-        {
-          icon: '🏆',
-          title: 'Mestre Bíblico',
-          desc: 'Alcance 80 pontos ou mais',
-          unlocked: stats.bestScore >= 80
-        },
-        {
-          icon: '💯',
-          title: 'Perfeição',
-          desc: 'Alcance 100 pontos',
-          unlocked: stats.bestScore >= 100
-        },
-        {
-          icon: '📚',
-          title: 'Estudioso',
-          desc: 'Acumule 500 pontos totais',
-          unlocked: stats.totalScore >= 500
-        },
-        {
-          icon: '🌟',
-          title: 'Sábio',
-          desc: 'Acumule 1000 pontos totais',
-          unlocked: stats.totalScore >= 1000
-        },
-        {
-          icon: '👑',
-          title: 'Lenda',
-          desc: 'Acumule 2000 pontos totais',
-          unlocked: stats.totalScore >= 2000
-        }
-      ];
+            <div class="section">
+                <h3>🏆 Suas Conquistas</h3>
+                <div class="achievements-grid" id="achievementsGrid">
+                    <!-- Conquistas serão carregadas aqui -->
+                </div>
+            </div>
 
-      achievementsGrid.innerHTML = '';
-      achievements.forEach(achievement => {
-        const card = document.createElement('div');
-        card.className = `achievement-card ${achievement.unlocked ? '' : 'locked'}`;
-        card.innerHTML = `
-          <div class="achievement-icon">${achievement.icon}</div>
-          <div class="achievement-info">
-            <div class="achievement-title">${achievement.title}</div>
-            <div class="achievement-desc">${achievement.desc}</div>
-          </div>
-        `;
-        achievementsGrid.appendChild(card);
-      });
-    }
+            <div class="section">
+                <h3>📜 Histórico de Quizzes</h3>
+                <div class="quiz-history">
+                    <table class="history-table">
+                        <thead>
+                            <tr>
+                                <th>Data</th>
+                                <th>Quiz</th>
+                                <th>Pontuação</th>
+                                <th>Acertos</th>
+                            </tr>
+                        </thead>
+                        <tbody id="historyBody">
+                            <tr>
+                                <td colspan="4" style="text-align: center; padding: 30px;">
+                                    Nenhum quiz realizado ainda. Comece agora!
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
 
-    // Função para criar gráfico de evolução
-    async function createScoreChart(userData) {
-      const ctx = document.getElementById('scoreChart');
-      
-      try {
-        const historyRef = ref(database, `users/${auth.currentUser.uid}/history`);
-        const historySnapshot = await get(historyRef);
+            <div style="text-align: center;">
+                <a href="index.html" class="back-btn">🏠 Voltar ao Início</a>
+            </div>
+        </div>
+    </div>
 
-        let labels = [];
-        let scores = [];
+    <!-- Firebase -->
+    <script type="module">
+        import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js';
+        import { getAuth, onAuthStateChanged, signOut } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js';
+        import { getDatabase, ref, get, set } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js';
 
-        if (historySnapshot.exists()) {
-          const history = historySnapshot.val();
-          const historyArray = Object.values(history).sort((a, b) => new Date(a.date) - new Date(b.date));
+        const firebaseConfig = {
+            apiKey: "AIzaSyBqBXCUJKKZqJqJqJqJqJqJqJqJqJqJqJq",
+            authDomain: "quiz-graca-diaria.firebaseapp.com",
+            databaseURL: "https://quiz-graca-diaria-default-rtdb.firebaseio.com",
+            projectId: "quiz-graca-diaria",
+            storageBucket: "quiz-graca-diaria.firebasestorage.app",
+            messagingSenderId: "123456789012",
+            appId: "1:123456789012:web:abcdef1234567890abcdef"
+        };
 
-          // Pegar os últimos 10 quizzes
-          const recentHistory = historyArray.slice(-10);
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const database = getDatabase(app);
 
-          labels = recentHistory.map((item, index) => `Quiz ${index + 1}`);
-          scores = recentHistory.map(item => item.score || 0);
-        }
+        console.log('🔥 Firebase inicializado no dashboard');
 
-        // Se não houver dados, mostrar gráfico vazio
-        if (labels.length === 0) {
-          labels = ['Sem dados'];
-          scores = [0];
-        }
+        // Definir conquistas
+        const allAchievements = [
+            { id: 'first_quiz', icon: '🎯', name: 'Primeiro Passo', desc: 'Complete seu primeiro quiz' },
+            { id: 'quiz_master', icon: '🏆', name: 'Mestre dos Quizzes', desc: 'Complete 10 quizzes' },
+            { id: 'perfect_score', icon: '💯', name: 'Perfeição', desc: 'Acerte 100% em um quiz' },
+            { id: 'dedicated', icon: '⭐', name: 'Dedicado', desc: 'Complete 5 quizzes' },
+            { id: 'scholar', icon: '📚', name: 'Estudioso', desc: 'Alcance 500 pontos' },
+            { id: 'expert', icon: '🎓', name: 'Expert', desc: 'Alcance 1000 pontos' }
+        ];
 
-        if (scoreChart) {
-          scoreChart.destroy();
-        }
+        onAuthStateChanged(auth, async (user) => {
+            console.log('🔍 onAuthStateChanged disparado');
 
-        scoreChart = new Chart(ctx, {
-          type: 'line',
-          data: {
-            labels: labels,
-            datasets: [{
-              label: 'Pontuação',
-              data: scores,
-              borderColor: '#FFD700',
-              backgroundColor: 'rgba(255, 215, 0, 0.1)',
-              borderWidth: 3,
-              tension: 0.4,
-              fill: true,
-              pointBackgroundColor: '#FFD700',
-              pointBorderColor: '#E6C200',
-              pointBorderWidth: 2,
-              pointRadius: 5,
-              pointHoverRadius: 7
-            }]
-          },
-          options: {
-            responsive: true,
-            maintainAspectRatio: true,
-            plugins: {
-              legend: {
-                display: true,
-                position: 'top',
-                labels: {
-                  font: {
-                    family: 'Poppins',
-                    size: 14,
-                    weight: '600'
-                  }
-                }
-              },
-              tooltip: {
-                backgroundColor: 'rgba(0, 0, 0, 0.8)',
-                titleFont: {
-                  family: 'Poppins',
-                  size: 14
-                },
-                bodyFont: {
-                  family: 'Poppins',
-                  size: 13
-                },
-                padding: 12,
-                cornerRadius: 8
-              }
-            },
-            scales: {
-              y: {
-                beginAtZero: true,
-                max: 100,
-                ticks: {
-                  font: {
-                    family: 'Poppins',
-                    size: 12
-                  }
-                },
-                grid: {
-                  color: 'rgba(0, 0, 0, 0.05)'
-                }
-              },
-              x: {
-                ticks: {
-                  font: {
-                    family: 'Poppins',
-                    size: 12
-                  }
-                },
-                grid: {
-                  display: false
-                }
-              }
+            if (user) {
+                console.log('✅ Usuário autenticado:', user.email);
+                await loadDashboard(user);
+            } else {
+                console.log('❌ Nenhum usuário autenticado');
+                window.location.href = 'index.html';
             }
-          }
         });
-      } catch (error) {
-        console.error('Erro ao criar gráfico:', error);
-      }
-    }
 
-    // Função de logout
-    window.logout = async () => {
-      try {
-        await signOut(auth);
-        localStorage.removeItem('currentUser');
-        window.location.href = 'index.html';
-      } catch (error) {
-        console.error('Erro ao fazer logout:', error);
-        alert('❌ Erro ao fazer logout: ' + error.message);
-      }
-    };
-  </script>
+        async function loadDashboard(user) {
+            try {
+                console.log('📡 Carregando dados do usuário:', user.uid);
+
+                // Atualizar informações do usuário
+                const userName = user.displayName || user.email.split('@')[0];
+                const userInitial = userName.charAt(0).toUpperCase();
+
+                document.getElementById('userName').textContent = userName;
+                document.getElementById('userEmail').textContent = user.email;
+                document.getElementById('userAvatar').textContent = userInitial;
+
+                // Buscar dados do Firebase
+                const userRef = ref(database, `users/${user.uid}`);
+                const snapshot = await get(userRef);
+
+                let userData = {
+                    quizzes: [],
+                    totalPoints: 0,
+                    achievements: []
+                };
+
+                if (snapshot.exists()) {
+                    userData = snapshot.val();
+                    console.log('✅ Dados carregados:', userData);
+                } else {
+                    console.log('ℹ️ Nenhum dado encontrado, criando perfil novo');
+                    // Criar perfil inicial
+                    await set(userRef, userData);
+                }
+
+                // Atualizar estatísticas
+                const quizzes = userData.quizzes || [];
+                const totalQuizzes = quizzes.length;
+                const totalPoints = userData.totalPoints || 0;
+                const avgScore = totalQuizzes > 0 
+                    ? Math.round(quizzes.reduce((sum, q) => sum + (q.score || 0), 0) / totalQuizzes)
+                    : 0;
+
+                document.getElementById('totalQuizzes').textContent = totalQuizzes;
+                document.getElementById('totalPoints').textContent = totalPoints;
+                document.getElementById('avgScore').textContent = avgScore + '%';
+                document.getElementById('achievements').textContent = (userData.achievements || []).length;
+
+                // Carregar conquistas
+                loadAchievements(userData);
+
+                // Carregar histórico
+                loadHistory(quizzes);
+
+                // Mostrar dashboard
+                document.getElementById('loading').style.display = 'none';
+                document.getElementById('dashboardContent').style.display = 'block';
+
+                // Inicializar AdSense após o conteúdo estar visível
+                setTimeout(() => {
+                    try {
+                        (adsbygoogle = window.adsbygoogle || []).push({});
+                        console.log('✅ AdSense inicializado');
+                    } catch (e) {
+                        console.log('⚠️ AdSense não carregado:', e);
+                    }
+                }, 500);
+
+            } catch (error) {
+                console.error('❌ Erro ao carregar dashboard:', error);
+                alert('Erro ao carregar dados. Verifique as regras do Firebase.');
+            }
+        }
+
+        function loadAchievements(userData) {
+            const userAchievements = userData.achievements || [];
+            const grid = document.getElementById('achievementsGrid');
+            grid.innerHTML = '';
+
+            allAchievements.forEach(achievement => {
+                const isUnlocked = userAchievements.includes(achievement.id);
+                const div = document.createElement('div');
+                div.className = `achievement ${isUnlocked ? 'unlocked' : 'locked'}`;
+                div.innerHTML = `
+                    <div class="achievement-icon">${achievement.icon}</div>
+                    <div class="achievement-name">${achievement.name}</div>
+                    <div class="achievement-desc">${achievement.desc}</div>
+                `;
+                grid.appendChild(div);
+            });
+        }
+
+        function loadHistory(quizzes) {
+            const tbody = document.getElementById('historyBody');
+
+            if (!quizzes || quizzes.length === 0) {
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="4" style="text-align: center; padding: 30px;">
+                            Nenhum quiz realizado ainda. <a href="index.html">Comece agora!</a>
+                        </td>
+                    </tr>
+                `;
+                return;
+            }
+
+            tbody.innerHTML = '';
+            quizzes.slice(-10).reverse().forEach(quiz => {
+                const tr = document.createElement('tr');
+                const date = new Date(quiz.date).toLocaleDateString('pt-BR');
+                tr.innerHTML = `
+                    <td>${date}</td>
+                    <td>${quiz.quizName || 'Quiz Bíblico'}</td>
+                    <td>${quiz.points || 0} pts</td>
+                    <td>${quiz.score || 0}%</td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        window.logout = async function() {
+            if (confirm('Deseja realmente sair?')) {
+                try {
+                    await signOut(auth);
+                    window.location.href = 'index.html';
+                } catch (error) {
+                    console.error('Erro ao sair:', error);
+                    alert('Erro ao sair. Tente novamente.');
+                }
+            }
+        };
+    </script>
 </body>
 </html>
