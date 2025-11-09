@@ -427,6 +427,26 @@
       text-decoration: underline;
     }
     
+    .error-message {
+      background: #ffebee;
+      color: var(--error);
+      padding: 10px;
+      border-radius: 8px;
+      margin: 10px 0;
+      display: none;
+      font-size: 0.9rem;
+    }
+    
+    .success-message {
+      background: #e8f5e9;
+      color: var(--success);
+      padding: 10px;
+      border-radius: 8px;
+      margin: 10px 0;
+      display: none;
+      font-size: 0.9rem;
+    }
+    
     @media (max-width: 768px) {
       .hero h1 { font-size: 1.8rem; }
       .hero p { font-size: 1rem; }
@@ -616,9 +636,10 @@
       
       <div id="login-form">
         <h2 style="margin-bottom: 20px;">🔐 Entrar</h2>
+        <div class="error-message" id="login-error"></div>
         <div class="form-group">
-          <label>Nome de Usuário:</label>
-          <input type="text" id="login-username" placeholder="Digite seu nome de usuário">
+          <label>Email:</label>
+          <input type="email" id="login-email" placeholder="seu@email.com">
         </div>
         <div class="form-group">
           <label>Senha:</label>
@@ -632,6 +653,8 @@
 
       <div id="register-form" style="display:none;">
         <h2 style="margin-bottom: 20px;">📝 Registrar</h2>
+        <div class="error-message" id="register-error"></div>
+        <div class="success-message" id="register-success"></div>
         <div class="form-group">
           <label>Nome de Usuário:</label>
           <input type="text" id="register-username" placeholder="Escolha um nome de usuário">
@@ -642,7 +665,7 @@
         </div>
         <div class="form-group">
           <label>Senha:</label>
-          <input type="password" id="register-password" placeholder="Escolha uma senha">
+          <input type="password" id="register-password" placeholder="Mínimo 6 caracteres">
         </div>
         <button class="btn-submit" onclick="register()">Registrar</button>
         <div class="toggle-form">
@@ -661,8 +684,9 @@
 
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/12.5.0/firebase-app.js";
+    import { getAnalytics, logEvent } from "https://www.gstatic.com/firebasejs/12.5.0/firebase-analytics.js";
     import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/12.5.0/firebase-auth.js";
-    import { getDatabase, ref, set, get } from "https://www.gstatic.com/firebasejs/12.5.0/firebase-database.js";
+    import { getDatabase, ref, set, get, query, orderByChild, limitToLast } from "https://www.gstatic.com/firebasejs/12.5.0/firebase-database.js";
 
     const firebaseConfig = {
       apiKey: "AIzaSyBj2RLZGicJnVfCV6BJafB91bvH65rC8zM",
@@ -675,19 +699,25 @@
     };
 
     const app = initializeApp(firebaseConfig);
+    const analytics = getAnalytics(app);
     const auth = getAuth(app);
     const database = getDatabase(app);
 
+    // Exportar para uso global
     window.firebaseAuth = auth;
     window.firebaseDatabase = database;
+    window.firebaseAnalytics = analytics;
+    window.logEvent = logEvent;
 
     // Verificar estado de autenticação
-    onAuthStateChanged(auth, (user) => {
+    onAuthStateChanged(auth, async (user) => {
       const userInfo = document.getElementById('user-info');
       const navDashboard = document.getElementById('nav-dashboard');
       
       if (user) {
-        get(ref(database, 'users/' + user.uid)).then((snapshot) => {
+        try {
+          const userRef = ref(database, 'users/' + user.uid);
+          const snapshot = await get(userRef);
           const userData = snapshot.val();
           const username = userData?.username || user.email.split('@')[0];
           
@@ -698,8 +728,14 @@
           `;
           
           navDashboard.style.display = 'inline-block';
-          localStorage.setItem('currentUser', JSON.stringify({ uid: user.uid, username }));
-        });
+          localStorage.setItem('currentUser', JSON.stringify({ 
+            uid: user.uid, 
+            username: username,
+            email: user.email 
+          }));
+        } catch (error) {
+          console.error('Erro ao carregar dados do usuário:', error);
+        }
       } else {
         userInfo.innerHTML = '<button class="btn-login" onclick="openLoginModal()">Entrar</button>';
         navDashboard.style.display = 'none';
@@ -707,13 +743,26 @@
       }
     });
 
+    // Função de registro
     window.register = async () => {
-      const username = document.getElementById('register-username').value;
-      const email = document.getElementById('register-email').value;
+      const username = document.getElementById('register-username').value.trim();
+      const email = document.getElementById('register-email').value.trim();
       const password = document.getElementById('register-password').value;
+      const errorDiv = document.getElementById('register-error');
+      const successDiv = document.getElementById('register-success');
+
+      errorDiv.style.display = 'none';
+      successDiv.style.display = 'none';
 
       if (!username || !email || !password) {
-        alert('Por favor, preencha todos os campos!');
+        errorDiv.textContent = 'Por favor, preencha todos os campos!';
+        errorDiv.style.display = 'block';
+        return;
+      }
+
+      if (password.length < 6) {
+        errorDiv.textContent = 'A senha deve ter no mínimo 6 caracteres!';
+        errorDiv.style.display = 'block';
         return;
       }
 
@@ -725,70 +774,107 @@
           username: username,
           email: email,
           createdAt: new Date().toISOString(),
-          totalQuizzes: 0,
-          totalScore: 0,
-          achievements: []
-        });
-
-        alert('✅ Conta criada com sucesso!');
-        closeLoginModal();
-        
-        if(typeof gtag !== 'undefined') {
-          gtag('event', 'sign_up', { method: 'email' });
-        }
-      } catch (error) {
-        alert('❌ Erro: ' + error.message);
-      }
-    };
-
-    window.login = async () => {
-      const username = document.getElementById('login-username').value;
-      const password = document.getElementById('login-password').value;
-
-      if (!username || !password) {
-        alert('Por favor, preencha todos os campos!');
-        return;
-      }
-
-      // Buscar email pelo username
-      try {
-        const usersRef = ref(database, 'users');
-        const snapshot = await get(usersRef);
-        
-        let userEmail = null;
-        snapshot.forEach((childSnapshot) => {
-          const userData = childSnapshot.val();
-          if (userData.username === username) {
-            userEmail = userData.email;
+          stats: {
+            totalQuizzes: 0,
+            totalScore: 0,
+            bestScore: 0
           }
         });
 
-        if (!userEmail) {
-          // Tentar usar como email diretamente
-          userEmail = username;
-        }
-
-        await signInWithEmailAndPassword(auth, userEmail, password);
-        alert('✅ Login realizado com sucesso!');
-        closeLoginModal();
+        successDiv.textContent = '✅ Conta criada com sucesso! Redirecionando...';
+        successDiv.style.display = 'block';
         
-        if(typeof gtag !== 'undefined') {
-          gtag('event', 'login', { method: 'email' });
-        }
+        logEvent(analytics, 'sign_up', { method: 'email' });
+        
+        setTimeout(() => {
+          closeLoginModal();
+          window.location.reload();
+        }, 1500);
       } catch (error) {
-        alert('❌ Erro: Usuário ou senha incorretos!');
+        console.error('Erro ao registrar:', error);
+        let errorMessage = 'Erro ao criar conta. Tente novamente.';
+        
+        if (error.code === 'auth/email-already-in-use') {
+          errorMessage = 'Este email já está cadastrado!';
+        } else if (error.code === 'auth/invalid-email') {
+          errorMessage = 'Email inválido!';
+        } else if (error.code === 'auth/weak-password') {
+          errorMessage = 'Senha muito fraca!';
+        }
+        
+        errorDiv.textContent = '❌ ' + errorMessage;
+        errorDiv.style.display = 'block';
       }
     };
 
+    // Função de login
+    window.login = async () => {
+      const email = document.getElementById('login-email').value.trim();
+      const password = document.getElementById('login-password').value;
+      const errorDiv = document.getElementById('login-error');
+
+      errorDiv.style.display = 'none';
+
+      if (!email || !password) {
+        errorDiv.textContent = 'Por favor, preencha todos os campos!';
+        errorDiv.style.display = 'block';
+        return;
+      }
+
+      try {
+        await signInWithEmailAndPassword(auth, email, password);
+        
+        logEvent(analytics, 'login', { method: 'email' });
+        
+        closeLoginModal();
+        window.location.reload();
+      } catch (error) {
+        console.error('Erro ao fazer login:', error);
+        let errorMessage = 'Email ou senha incorretos!';
+        
+        if (error.code === 'auth/user-not-found') {
+          errorMessage = 'Usuário não encontrado!';
+        } else if (error.code === 'auth/wrong-password') {
+          errorMessage = 'Senha incorreta!';
+        } else if (error.code === 'auth/invalid-email') {
+          errorMessage = 'Email inválido!';
+        } else if (error.code === 'auth/too-many-requests') {
+          errorMessage = 'Muitas tentativas. Tente novamente mais tarde.';
+        }
+        
+        errorDiv.textContent = '❌ ' + errorMessage;
+        errorDiv.style.display = 'block';
+      }
+    };
+
+    // Função de logout
     window.logout = async () => {
       try {
         await signOut(auth);
-        alert('✅ Logout realizado com sucesso!');
+        localStorage.removeItem('currentUser');
         window.location.reload();
       } catch (error) {
+        console.error('Erro ao fazer logout:', error);
         alert('❌ Erro ao fazer logout: ' + error.message);
       }
     };
+
+    // Carregar estatísticas (opcional)
+    async function loadStats() {
+      try {
+        const usersRef = ref(database, 'users');
+        const usersSnapshot = await get(usersRef);
+        
+        if (usersSnapshot.exists()) {
+          const totalUsers = Object.keys(usersSnapshot.val()).length;
+          document.getElementById('total-users').textContent = totalUsers.toLocaleString();
+        }
+      } catch (error) {
+        console.error('Erro ao carregar estatísticas:', error);
+      }
+    }
+
+    loadStats();
   </script>
 
   <script>
@@ -798,11 +884,18 @@
 
     function closeLoginModal() {
       document.getElementById('loginModal').style.display = 'none';
+      document.getElementById('login-error').style.display = 'none';
+      document.getElementById('register-error').style.display = 'none';
+      document.getElementById('register-success').style.display = 'none';
     }
 
     function toggleForm() {
       const loginForm = document.getElementById('login-form');
       const registerForm = document.getElementById('register-form');
+      
+      document.getElementById('login-error').style.display = 'none';
+      document.getElementById('register-error').style.display = 'none';
+      document.getElementById('register-success').style.display = 'none';
       
       if (loginForm.style.display === 'none') {
         loginForm.style.display = 'block';
@@ -820,6 +913,17 @@
         closeLoginModal();
       }
     }
+
+    // Permitir Enter para submeter formulários
+    document.addEventListener('DOMContentLoaded', () => {
+      document.getElementById('login-password').addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') login();
+      });
+      
+      document.getElementById('register-password').addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') register();
+      });
+    });
   </script>
 </body>
 </html>
